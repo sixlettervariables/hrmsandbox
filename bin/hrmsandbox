@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+/** hrmsandbox - Execute HRM programs
+ *
+ */
+var hrm = require('../lib/hrm');
+var exe = require('../index.js');
+var fs = require('fs');
+var argv = require('minimist')(process.argv.slice(2), { '--': true });
+
+if (argv.file === undefined) {
+  throw new Error('Missing --file=');
+}
+
+var source = fs.readFileSync(argv.file);
+var program = hrm.parse(source.toString());
+//var program = hrm.parse(":start\r\ninbox\r\ncopyto $a\r\n   outbox\r\njump :start\r\ncopyto $a\r\ncopyto $b_c_a\r\n:a_b_c\r\n//hello\r\n");
+
+console.dir(program);
+
+var inbox = argv['--'].map(Number);
+
+exe(program, inbox);

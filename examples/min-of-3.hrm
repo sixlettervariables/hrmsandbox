@@ -1,0 +1,40 @@
+// Order 3 numbers from smallest to largest
+:start
+    inbox
+    copyto $a
+    inbox
+    copyto $b
+    inbox
+    copyto $c
+
+:comp_a_b
+    copyfrom $a
+    copyto $temp
+    sub $b
+    jumpn :comp_b_c
+    jumpz :comp_b_c
+    copyfrom $b
+    copyto $a
+    copyfrom $temp
+    copyto $b
+
+:comp_b_c
+    copyfrom $b
+    copyto $temp
+    sub $c
+    jumpn :done
+    jumpz :done
+    copyfrom $c
+    copyto $b
+    copyfrom $temp
+    copyto $c
+    jump :comp_a_b
+
+:done
+    copyfrom $a
+    outbox
+    copyfrom $b
+    outbox
+    copyfrom $c
+    outbox
+    jump :start

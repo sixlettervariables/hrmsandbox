@@ -1,0 +1,27 @@
+{
+  "name": "hrmsandbox",
+  "version": "0.0.1",
+  "description": "Human Resource Machine Sandbox",
+  "main": "index.js",
+  "bin": {
+    "hrmsandbox": "bin/hrmsandbox"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christopher A. Watford <christopher.watford@gmail.com> (https://github.com/sixlettervariables)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sixlettervariables/hrmsandbox.git"
+  },
+  "devDependencies": {
+    "pegjs": "^0.9.0"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  }
+}
