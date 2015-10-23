@@ -1,17 +1,6 @@
 var MAX_STATEMENTS = 200;
-var hrm = require('./lib/hrm.js');
-var fs = require('fs');
-var argv = require('minimist')(process.argv.slice(2), { '--': true });
 
-if (argv.file === undefined) {
-  throw new Error('Missing --file=');
-}
-
-var source = fs.readFileSync(argv.file);
-var program = hrm.parse(source.toString());
-//var program = hrm.parse(":start\r\ninbox\r\ncopyto $a\r\n   outbox\r\njump :start\r\ncopyto $a\r\ncopyto $b_c_a\r\n:a_b_c\r\n//hello\r\n");
-
-console.dir(program);
+module.exports = function(program, inbox) {
 
 // 1. Map Labels
 var labels = {};
@@ -22,7 +11,6 @@ for (var ix = 0; ix < program.statements.length; ++ix) {
   }
 }
 
-var inbox = argv['--'].map(Number);
 var outbox = [];
 var hand = undefined;
 var variables = {};
@@ -198,3 +186,4 @@ function printOutbox() {
 console.log('OUTBOX:');
 console.dir(outbox);
 }
+};
