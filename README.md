@@ -1,5 +1,5 @@
 # hrmsandbox
-A sandbox for Human Resource Machine programs.
+A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs.
 
 ## Installation
 I'll need to put this up on npm first for this to work...
