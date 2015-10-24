@@ -1,22 +1,96 @@
 #!/usr/bin/env node
 /** hrmsandbox - Execute HRM programs
  *
+ * Copyright (C) 2015 Christopher A Watford
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-var hrm = require('../lib/hrm');
-var exe = require('../index.js');
+var hrm = require('../lib/hrm-engine');
 var fs = require('fs');
 var argv = require('minimist')(process.argv.slice(2), { '--': true });
 
 if (argv.file === undefined) {
-  throw new Error('Missing --file=');
+  console.log('hrmsandbox: The Human Resource Machine program sandbox');
+  console.log();
+  console.log('Usage')
+  console.log(' hrmsandbox --file={FILE} [VARIABLES] -- [INBOX]');
+  console.log();
+  console.log('Options');
+  console.log('    --file   Specify the HRM program to execute.');
+  console.log('    --debug  Debug mode. A lot more information output.');
+  console.log();
+  console.log('Variables are read from any option that is not --file or --debug,');
+  console.log('like "-0" or "--temp".');
+  console.log();
+  console.log('Example');
+  console.log(' hrmsandbox --file=test.hrm -0 5 --temp=2 -- 5 4 3 2 1');
+  console.log();
+  console.log('The above would read the file "test.hrm" from the current directory');
+  console.log('and pass the variables $0 and $temp in as 5 and 2, respectively. The');
+  console.log('input tape would be read as follows: 5, 4, 3, 2, and lastly 1.');
+  console.log();
+  console.log('For more information, see https://github.com/sixlettervariables/hrmsandbox');
+  console.log();
+  return;
 }
 
-var source = fs.readFileSync(argv.file);
-var program = hrm.parse(source.toString());
-//var program = hrm.parse(":start\r\ninbox\r\ncopyto $a\r\n   outbox\r\njump :start\r\ncopyto $a\r\ncopyto $b_c_a\r\n:a_b_c\r\n//hello\r\n");
+try
+{
+  var source = fs.readFileSync(argv.file)
+                 .toString();
+  var sourceLines = source.split(/\r\n/);
+  var program = hrm.parse(source);
 
-console.dir(program);
+  var variables = {};
+  Object.keys(argv).forEach(function (key) {
+    if (!key.match(/^(file|debug|--|_)$/)) {
+      variables[key] = argv[key];
+    }
+  });
 
-var inbox = argv['--'].map(Number);
+  var inbox = argv['--'].map(Number);
+  var results = program.execute({ inbox: inbox, variables: variables });
 
-exe(program, inbox);
+  console.dir(results);
+}
+catch (error) {
+  if (error.name === 'SyntaxError') {
+    var loc = error.location.start;
+    console.error('Error parsing HRM program, aborted.');
+    console.error();
+    console.error(argv.file + '(' + loc.line + ':' + loc.column + '):');
+    console.error();
+    if (loc.line > 1) {
+      console.error('...');
+      console.error('  ' + sourceLines[loc.line - 2]);
+    }
+    console.error('  ' + sourceLines[loc.line - 1]);
+    console.error('  ' + Array(loc.column).join(' ') + '^');
+    if (loc.column < 20) {
+      console.error('  ' + Array(loc.column).join(' ') + '\\ ' + error.message);
+    }
+    else {
+      console.error('  ' + Array(loc.column).join(' ') + '|');
+      console.error(error.message);
+    }
+  }
+  else {
+    console.error(error);
+  }
+}
