@@ -2245,8 +2245,8 @@ HrmProgram.prototype.execute = function (options) {
 
       case 'add':
       case 'sub':
-      case 'bump+':
-      case 'bump-':
+      case 'inc':
+      case 'dec':
         this._hand = this.do_math(stmt.type, stmt.var);
         break;
 
