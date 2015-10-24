@@ -21,30 +21,30 @@
   function buildList(head, tail, index) {
     return [head].concat(extractList(tail, index));
   }
-  
+
   function optionalList(value) {
     return value !== null ? value : [];
   }
 }
- 
+
 Start
  = __ program:Program __ { return program; }
- 
+
 Program
  = body:Lines? {
    return {
      statements: optionalList(body)
    };
  }
- 
+
 Lines
  = head:Line tail:(__ Line)* {
    return buildList(head, tail, 1);
  }
- 
+
 Line
  = __ s:Statement __ { return s; }
- 
+
 SourceCharacter
   = .
 
@@ -66,7 +66,7 @@ LineTerminatorSequence "end of line"
   / "\r"
   / "\u2028"
   / "\u2029"
-  
+
 Comment "comment"
   = MultiLineComment
   / SingleLineComment
@@ -79,12 +79,15 @@ MultiLineCommentNoLineTerminator
 
 SingleLineComment
   = "//" (!LineTerminator SourceCharacter)*
-  
+
 Identifier
   = !ReservedWord name:IdentifierName { return name; }
 
+IdentifierStart
+ = "$"
+
 IdentifierName "identifier"
-  = "$" tail:IdentifierPart* {
+  = IdentifierStart tail:IdentifierPart* {
       return {
         type: "Identifier",
         name: tail.join("")
@@ -95,7 +98,7 @@ IdentifierPart
   = UnicodeLetter
   / UnicodeDigit
   / "_"
- 
+
 UnicodeLetter
   = Lu
   / Ll
@@ -103,10 +106,10 @@ UnicodeLetter
   / Lm
   / Lo
   / Nl
-  
+
 UnicodeDigit
   = Nd
- 
+
 ReservedWord
  = tkInbox
  / tkOutbox
@@ -119,39 +122,42 @@ ReservedWord
  / tkJump
  / tkJumpZero
  / tkJumpNeg
- 
+
 Label
- = ":" name:IdentifierPart+ {
+ = LabelStart name:IdentifierPart+ {
    return {
      "type": "label",
      "name": name.join("")
    };
  }
- 
+
+LabelStart "label"
+ = ":"
+
 Statement
  = LabelStatement
  / InboxStatement
  / OutboxStatement
  / SingleArgOperandStatement
  / JumpStatement
- 
+
 LabelStatement
  = Label
- 
+
 InboxStatement
  = tkInbox {
    return {
      "type": "inbox"
    };
  }
- 
+
 OutboxStatement
  = tkOutbox {
    return {
      "type": "outbox"
    };
  }
- 
+
 SingleArgOperandStatement
  = tkCopyFrom __ arg:Identifier {
    return {
@@ -189,7 +195,7 @@ SingleArgOperandStatement
      "var": arg.name
    };
  }
- 
+
 JumpStatement
  = tkJump __ label:Label {
    return {
@@ -209,7 +215,7 @@ JumpStatement
      "label": label.name
    };
  }
- 
+
 //
 // Tokens
 //
@@ -290,6 +296,6 @@ __
 
 _
   = (WhiteSpace / MultiLineCommentNoLineTerminator)*
-  
+
 EOF
   = !.

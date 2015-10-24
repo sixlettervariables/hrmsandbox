@@ -2,8 +2,7 @@
 A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs.
 
 ## Installation
-I'll need to put this up on npm first for this to work...
-
+Download node at [nodejs.org](http://nodejs.org) and install it, if you haven't already.
 ```sh
 $ npm install hrmsandbox
 ```
@@ -23,10 +22,20 @@ OUTBOX:
 ```
 
 ## Tests
-
+Tests use `tape` and require `tap`:
 ```sh
 $ npm install
 $ npm test
+
+> hrmsandbox@0.1.0 test /tmp/hrmsandbox
+> tap test/*.js
+
+test/syntax.js ........................................ 2/2
+total ................................................. 2/2
+
+  2 passing (163.716ms)
+
+  ok
 ```
 
 ## Dependencies

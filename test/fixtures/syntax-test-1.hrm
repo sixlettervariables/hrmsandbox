@@ -1,0 +1,43 @@
+
+// single line comment test
+:label // with a single line comment
+/* multi
+line
+* comment
+/ TEST
+*/ :label2
+inbox // single line
+/*beginning*/ outbox
+copyfrom /* with a comment */$a
+copyto/* does
+   this
+   work*/$b
+copyfrom $reallylongvariable_name_hereWith_other_STUFF
+jump :label
+jump :other_label_that_is_long
+jump :1234567890
+jumpz :to_infinity_and_beyond
+jumpn :byebye
+bump+ $a
+bump- $______________
+add $c
+sub $c
+  add $c /* leading whitespace */
+                                          sub $aoeuaoeu // lots of whitespace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+outbox
+jump :label

@@ -1,13 +1,27 @@
 {
   "name": "hrmsandbox",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Human Resource Machine Sandbox",
-  "main": "index.js",
+  "main": "lib/hrm-engine.js",
   "bin": {
     "hrmsandbox": "bin/hrmsandbox"
   },
+  "files": [
+    "bin/hrmsandbox",
+    "build/hrm-browser.js",
+    "examples/min-of-3.hrm",
+    "examples/README.md",
+    "grammar/hrm.pegjs",
+    "lib/hrm-engine.js",
+    "lib/hrm.pegjs.js",
+    "test/syntax.js",
+    "test/fixtures/syntax-test-1.hrm",
+    "Gruntfile.js",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/*.js"
   },
   "author": "Christopher A. Watford <christopher.watford@gmail.com> (https://github.com/sixlettervariables)",
   "license": "MIT",
@@ -16,7 +30,13 @@
     "url": "https://github.com/sixlettervariables/hrmsandbox.git"
   },
   "devDependencies": {
-    "pegjs": "^0.9.0"
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-peg": "^2.0.0",
+    "pegjs": "^0.9.0",
+    "tap": "^2.2.0",
+    "tape": "^4.2.2"
   },
   "dependencies": {
     "minimist": "^1.2.0"

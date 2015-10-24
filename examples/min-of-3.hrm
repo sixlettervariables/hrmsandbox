@@ -1,4 +1,8 @@
+/* hrmsandbox Examples: min-of-3.hrm */
+
+//
 // Order 3 numbers from smallest to largest
+//
 :start
     inbox
     copyto $a
