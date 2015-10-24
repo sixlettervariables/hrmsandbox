@@ -138,13 +138,13 @@ module.exports = (function() {
          },
         peg$c55 = function(arg) {
            return {
-             "type": "inc",
+             "type": "bump+",
              "var": arg.name
            };
          },
         peg$c56 = function(arg) {
            return {
-             "type": "dec",
+             "type": "bump-",
              "var": arg.name
            };
          },
@@ -2245,8 +2245,8 @@ HrmProgram.prototype.execute = function (options) {
 
       case 'add':
       case 'sub':
-      case 'inc':
-      case 'dec':
+      case 'bump+':
+      case 'bump-':
         this._hand = this.do_math(stmt.type, stmt.var);
         break;
 

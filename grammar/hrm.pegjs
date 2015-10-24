@@ -185,13 +185,13 @@ SingleArgOperandStatement
  }
  / tkBumpUp __ arg:Identifier {
    return {
-     "type": "inc",
+     "type": "bump+",
      "var": arg.name
    };
  }
  / tkBumpDn __ arg:Identifier {
    return {
-     "type": "dec",
+     "type": "bump-",
      "var": arg.name
    };
  }
