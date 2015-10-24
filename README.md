@@ -1,6 +1,9 @@
 # hrmsandbox
 A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs.
 
+## Web Demo
+[Try a live demo of the HRM Sandbox.](https://s3.amazonaws.com/christopherwatford-com/hrm/hrmfiddle.html)
+
 ## Installation
 Download node at [nodejs.org](http://nodejs.org) and install it, if you haven't already.
 ```sh
