@@ -21,8 +21,13 @@ grunt.initConfig({
     dist: {
       files: {
         'build/hrm-browser.js': ['lib/hrm.pegjs.js', 'lib/hrm-engine.js']
+      },
+      options: {
+        alias: {
+          'hrmsandbox': './lib/hrm-engine.js'
+        }
       }
-    }
+    },
   }
 });
 
