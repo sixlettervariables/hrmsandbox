@@ -20,15 +20,15 @@ line, with or without comments.
 |----------------|----------------------------------------------------------------------|
 | `inbox`        | Takes the value from the top of the inbox and places it in your hand |
 | `outbox`       | Takes the value from your hand and places it on the top of the inbox |
-| `copyto $v`    | Copies the value in your hand into `$v`                              |
-| `copyfrom $v`  | Copies the value from `$v` into your hand                            |
-| `add $v`       | Adds the value in your hand to the value in `$v`                     |
-| `sub $v`       | Subtracts from the value in your hand the value in `$v`              |
-| `bump+ $v`     | Increments the value in $v by one (1), saving it into `$v` and your hand |
-| `bump- $v`     | Decrements the value in $v by one (1), saving it into `$v` and your hand |
-| `jump :label`  | Jumps to `:label`                                                    |
-| `jumpz :label` | Jumps to `:label` if the value in your hand is zero (0)              |
-| `jumpn :label` | Jumps to `:label` if the value in your hand is negative              |
+| `copyto 0`     | Copies the value in your hand into `0`                              |
+| `copyfrom 0`   | Copies the value from `0` into your hand                            |
+| `add 5`        | Adds the value in your hand to the value in `5`                     |
+| `sub 9`        | Subtracts from the value in your hand the value in `9`              |
+| `bumpup 0`     | Increments the value in `0` by one (1), saving it into `0` and your hand |
+| `bumpdn 3`     | Decrements the value in `3` by one (1), saving it into `3` and your hand |
+| `jump label`   | Jumps to `label`                                                    |
+| `jumpz label`  | Jumps to `label` if the value in your hand is zero (0)              |
+| `jumpn label`  | Jumps to `label` if the value in your hand is negative              |
 
 ## Examples
 The `examples` folder contains some examples of HRM Sandbox programs.
