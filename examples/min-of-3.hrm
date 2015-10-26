@@ -1,44 +1,45 @@
-/* hrmsandbox Examples: min-of-3.hrm */
+-- HUMAN RESOURCE MACHINE PROGRAM --
+-- hrmsandbox Examples: min-of-3.hrm --
 
-//
-// Order 3 numbers from smallest to largest
-//
-:start
+--
+-- Order 3 numbers from smallest to largest
+--
+a:
     inbox
-    copyto $a
+    copyto 0
     inbox
-    copyto $b
+    copyto 1
     inbox
-    copyto $c
+    copyto 2
 
-:comp_a_b
-    copyfrom $a
-    copyto $temp
-    sub $b
-    jumpn :comp_b_c
-    jumpz :comp_b_c
-    copyfrom $b
-    copyto $a
-    copyfrom $temp
-    copyto $b
+b:
+    copyfrom 0
+    copyto 9
+    sub 1
+    jumpn c
+    jumpz c
+    copyfrom 1
+    copyto 0
+    copyfrom 9
+    copyto 1
 
-:comp_b_c
-    copyfrom $b
-    copyto $temp
-    sub $c
-    jumpn :done
-    jumpz :done
-    copyfrom $c
-    copyto $b
-    copyfrom $temp
-    copyto $c
-    jump :comp_a_b
+c:
+    copyfrom 1
+    copyto 9
+    sub 2
+    jumpn d
+    jumpz d
+    copyfrom 2
+    copyto 1
+    copyfrom 9
+    copyto 2
+    jump b
 
-:done
-    copyfrom $a
+d:
+    copyfrom 0
     outbox
-    copyfrom $b
+    copyfrom 1
     outbox
-    copyfrom $c
+    copyfrom 2
     outbox
-    jump :start
+    jump a

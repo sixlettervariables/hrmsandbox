@@ -1,5 +1,6 @@
 # hrmsandbox
-A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs.
+A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs. There is a similar project [hrm-cpu](https://github.com/nrkn/hrm-cpu) which works under ES6, and 
+there are projects with [level data](https://github.com/atesgoral/hrm-level-data) and with [solutions](https://github.com/atesgoral/hrm-solutions).
 
 ## Web Demo
 [Try a live demo of the HRM Sandbox.](https://s3.amazonaws.com/christopherwatford-com/hrm/hrmfiddle.html)
@@ -30,13 +31,13 @@ Tests use `tape` and require `tap`:
 $ npm install
 $ npm test
 
-> hrmsandbox@0.1.0 test /tmp/hrmsandbox
+> hrmsandbox@0.2.0 test /tmp/hrmsandbox
 > tap test/*.js
 
-test/syntax.js ........................................ 2/2
-total ................................................. 2/2
+test/syntax.js ........................................ 13/13
+total ................................................. 13/13
 
-  2 passing (163.716ms)
+  13 passing (342.102ms)
 
   ok
 ```

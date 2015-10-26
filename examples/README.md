@@ -5,14 +5,51 @@ This folder contains examples you can run through the HRM Sandbox program.
 An HRM Sandbox program consists of a mix of labels and instructions, one per
 line, with or without comments.
 
+### Classic Syntax
+The classic HRM Syntax is supported and should be preferred when sharing
+solutions.
 ```
-  // this is a Single Line comment
+-- HUMAN RESOURCE MACHINE PROGRAM --
+-- this is a Single Line comment
+a:
+  inbox -- this is a comment with an instruction
+  copyto 9
+  jumpz c
+b:
+  copyto 3
+  copyfrom 9
+  add 3
+  outbox
+  jump a
+c:
+  outbox
+  jump a
+```
+
+### Extended Syntax
+Extended Syntax for the HRM Assembler is supported as well, allowing C style
+comments and named variables.
+```
+-- HUMAN RESOURCE MACHINE PROGRAM --
+-- this is a Single Line comment
+start:
   inbox // this is a comment with an instruction
-  /* This is
-  a
-  Multi
-              Line
-  Comment */
+  copyto $temp
+  jumpz noadd
+
+/* this label is used only for
+ * example purposes
+ */
+next:
+  copyto $adder
+  copyfrom $temp
+  add $adder
+  outbox
+  jump start
+
+noadd:
+  outbox
+  jump start
 ```
 
 ## HRM Sandbox Instruction Set
