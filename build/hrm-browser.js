@@ -2777,7 +2777,7 @@ module.exports = (function() {
         peg$c38 = function(v) {
            return {
              type: "Floor",
-             name: v
+             name: v.join("")
            };
          },
         peg$c39 = { type: "other", description: "identifier" },
@@ -5046,7 +5046,7 @@ module.exports = (function() {
 
 var hrm = require('hrm-grammar');
 
-var MAX_ITERATIONS = 1000;
+var MAX_ITERATIONS = 5000;
 
 var HrmProgram = function (program, options) {
   if (!(this instanceof HrmProgram)) {
