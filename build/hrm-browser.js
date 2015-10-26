@@ -5098,6 +5098,9 @@ HrmProgram.prototype.execute = function (options) {
       case 'define':
         labelHit++;
         break;
+      case 'comment':
+        labelHit++;
+        break;
       case 'label':
         labelHit++;
         break;
@@ -5264,7 +5267,7 @@ function Parse(source, options) {
     program = hrm.extended.parse(source);
   }
   else {
-    program = hrm.strict.parse(source);  
+    program = hrm.strict.parse(source);
   }
 
   return new HrmProgram(program, options);
