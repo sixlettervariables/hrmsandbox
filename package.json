@@ -1,6 +1,6 @@
 {
   "name": "hrmsandbox",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Human Resource Machine Sandbox",
   "main": "lib/hrm-engine.js",
   "bin": {
@@ -12,9 +12,6 @@
     "examples/min-of-3.hrm",
     "examples/README.md",
     "lib/hrm-engine.js",
-    "test/syntax.js",
-    "test/fixtures/syntax-test-1.hrm",
-    "test/fixtures/syntax-test-2.hrm",
     "Gruntfile.js",
     "LICENSE",
     "README.md"
@@ -36,7 +33,7 @@
     "tape": "^4.2.2"
   },
   "dependencies": {
-    "hrm-grammar": "^1.3.0",
+    "hrm-grammar": "^1.7.0",
     "minimist": "^1.2.0"
   },
   "engines": {
