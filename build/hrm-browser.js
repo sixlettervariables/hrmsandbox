@@ -5271,8 +5271,7 @@ HrmProgram.prototype.store = function (variable, value) {
         throw new Error('Cannot indirect copyfrom empty or non-existent variable: ' + variable.name);
       }
       var address = this.variables[variable.name];
-      this.variables[address] = value;
-      break;
+      return this.variables[address] = value;
     default:
       throw new Error('Unsupported addressing mode: ' + variable.type);
   }
@@ -5280,7 +5279,7 @@ HrmProgram.prototype.store = function (variable, value) {
 
 HrmProgram.prototype.do_copyto = function (variable) {
   if (this._hand !== undefined) {
-    this.store(variable, this._hand);
+    return this.store(variable, this._hand);
   }
   else {
     throw new Error('Cannot copy to variable with an empty hand');
@@ -5342,11 +5341,9 @@ HrmProgram.prototype.do_math = function(op, variable) {
     case 'sub':
       return this._hand - value;
     case 'bumpup':
-      this.store(variable, ++value);
-      return value;
+      return this.store(variable, ++value);
     case 'bumpdn':
-      this.store(variable, --value);
-      return value;
+      return this.store(variable, --value);
     default:
       throw new Error('Unsupported math operation: ' + op);
   }
