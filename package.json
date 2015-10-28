@@ -1,6 +1,6 @@
 {
   "name": "hrmsandbox",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Human Resource Machine Sandbox",
   "main": "lib/hrm-engine.js",
   "bin": {
@@ -33,7 +33,7 @@
     "tape": "^4.2.2"
   },
   "dependencies": {
-    "hrm-grammar": "^1.7.0",
+    "hrm-grammar": "^1.8.0",
     "minimist": "^1.2.0"
   },
   "engines": {
