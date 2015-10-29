@@ -64,7 +64,10 @@ try
     }
   });
 
-  var inbox = argv['--'].map(Number);
+  var inbox = argv['--'].map(function (s) {
+    var n = Number(s);
+    return Number.isNaN(n) ? s : n;
+  });
   var results = program.execute({ inbox: inbox, variables: variables });
 
   console.dir(results);
