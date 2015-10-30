@@ -1,6 +1,6 @@
 {
   "name": "hrmsandbox",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Human Resource Machine Sandbox",
   "main": "lib/hrm-engine.js",
   "bin": {
@@ -29,11 +29,13 @@
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
     "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-uglify": "^0.10.0",
     "tap": "^2.2.0",
     "tape": "^4.2.2"
   },
   "dependencies": {
-    "hrm-grammar": "^1.8.0",
+    "eventemitter2": "^0.4.14",
+    "hrm-grammar": "^2.0.3",
     "minimist": "^1.2.0"
   },
   "engines": {
