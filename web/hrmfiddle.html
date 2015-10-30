@@ -6,9 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HRM Fiddle</title>
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+  <link href="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.css" rel="stylesheet">
+  <style type="text/css" media="screen">
+      #editor {
+        position: relative;
+        height: 500px;
+      }
+  </style>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/5c5d660cf57e124a321861cde0972f2af226c4bc/build/hrm-browser.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako_inflate.min.js"></script>
+  <script src="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.js"></script>
+  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/a26b2cb45d108d5baf5a45b17e4666edaa00ccda/build/hrm-browser.min.js"></script>
 
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -16,27 +25,28 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
-
-  <style type="text/css">
-  textarea {
-    font-family: monospace;
-    width: 100%;
-    height: auto;
-  }
-  </style>
 </head>
 <body>
 <header class="container">
-  <h1>HRM Program Sandbox</h1>
+  <h1>HRM Fiddle</h1>
   <p>I don't work for <a href="http://tomorrowcorporation.com">Tommorow Corporation</a>,
     nor did I work on <a href="http://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a>. But I sure do love the game.</p>
   <p>HRM Sandbox provides a place to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
 </header>
 <section class="container">
   <div class="program col-lg-6 col-md-6 col-sm-12">
-    <h1>Program</h1>
-    <textarea id="program" class="form-control" rows="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
--- HUMAN RESOURCE MACHINE PROGRAM --
+    <div>
+        <button id="run" class="btn btn-primary pull-right">Run</button>
+    </div>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#code" aria-controls="code" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-list-alt"></i> Code</a></li>
+      <li role="presentation"><a href="#view" aria-controls="view" role="tab" data-toggle="tab" id="view-tab"><i class="glyphicon glyphicon-eye-open"></i> View</a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="code">
+        <div id="editor">-- HUMAN RESOURCE MACHINE PROGRAM --
 
 a:
   inbox
@@ -45,108 +55,157 @@ a:
   bumpup 0
   copyfrom [8]
   outbox
-  jump a
-    </textarea>
+  jump a</div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="view"><div class="hrmcode" id="code-view">Loading View...</div></div>
+    </div>
+
     <div class="alert alert-danger hidden" role="alert" id="error"></div>
-    <button id="run" class="btn btn-primary">Run</button>
   </div>
-  <div class="inputs col-lg-3 col-md-3 col-sm-6">
-   <h2>Inbox</h2>
-   <em>(one per line, read top to bottom)</em>
+  <div class="inputs col-lg-3 col-md-3 col-sm-3">
+   <h2>Inbox <small>one per line</small></h2>
    <textarea id="inbox" class="form-control" rows="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">1
 2
 3
 4</textarea>
-  <h2>Variables</h2>
-  <em>(JSON)</em><br />
+  </div>
+<div class="inputs col-lg-3 col-md-3 col-sm-3">
+  <h2>Floor <small>JSON</small></h2>
   <textarea id="variables" class="form-control" rows="5"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
   "8": 0,
   "9": -3
 }</textarea>
   </div>
-  <div class="outputs col-lg-3 col-md-3 col-sm-6">
-    <h2>Outbox</h2>
-    <em>(one per line, topmost is last)</em>
+  <div class="outputs col-lg-3 col-md-3 col-sm-3">
+    <h2>Outbox <small id="stats"></small></h2>
     <ul id="outbox" class="list-unstyled">
     </ul>
   </div>
 </section>
 <section class="container">
-  <h2><a id="user-content-hrm-sandbox-instruction-set" class="anchor" href="#hrm-sandbox-instruction-set" aria-hidden="true"></a>HRM Sandbox Instruction Set</h2>
-  <table class="table table-striped"><thead>
-  <tr>
-  <th>Instruction</th>
-  <th>Description</th>
-  </tr>
-  </thead><tbody>
-  <tr>
-  <td><code>inbox</code></td>
-  <td>Takes the value from the top of the inbox and places it in your hand</td>
-  </tr>
-  <tr>
-  <td><code>outbox</code></td>
-  <td>Takes the value from your hand and places it on the top of the inbox</td>
-  </tr>
-  <tr>
-  <td><code>copyto 4</code></td>
-  <td>Copies the value in your hand into <code>4</code></td>
-  </tr>
-  <tr>
-  <td><code>copyfrom 1</code></td>
-  <td>Copies the value from <code>4</code> into your hand</td>
-  </tr>
-  <tr>
-  <td><code>add 2</code></td>
-  <td>Adds the value in your hand to the value in <code>2</code></td>
-  </tr>
-  <tr>
-  <td><code>sub 3</code></td>
-  <td>Subtracts from the value in your hand the value in <code>3</code></td>
-  </tr>
-  <tr>
-  <td><code>bumpup 1</code></td>
-  <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
-  </tr>
-  <tr>
-  <td><code>bumpdn 0</code></td>
-  <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
-  </tr>
-  <tr>
-  <td><code>jump label</code></td>
-  <td>Jumps to <code>label</code></td>
-  </tr>
-  <tr>
-  <td><code>jumpz label</code></td>
-  <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
-  </tr>
-  <tr>
-  <td><code>jumpn label</code></td>
-  <td>Jumps to <code>label</code> if the value in your hand is negative</td>
-  </tr>
-  </tbody></table>
+  <div class="help">
+    <h2><a id="user-content-hrm-sandbox-instruction-set" class="anchor" href="#hrm-sandbox-instruction-set" aria-hidden="true"></a>HRM Sandbox Instruction Set</h2>
+    <table class="table table-striped small"><thead>
+    <tr>
+    <th>Instruction</th>
+    <th>Description</th>
+    </tr>
+    </thead><tbody>
+    <tr>
+    <td><code>inbox</code></td>
+    <td>Takes the value from the top of the inbox and places it in your hand</td>
+    </tr>
+    <tr>
+    <td><code>outbox</code></td>
+    <td>Takes the value from your hand and places it on the top of the inbox</td>
+    </tr>
+    <tr>
+    <td><code>copyto 4</code></td>
+    <td>Copies the value in your hand into <code>4</code></td>
+    </tr>
+    <tr>
+    <td><code>copyfrom 4</code></td>
+    <td>Copies the value from <code>4</code> into your hand</td>
+    </tr>
+    <tr>
+    <td><code>copyfrom [1]</code></td>
+    <td>Copies the value from the location pointed to by <code>1</code> into your hand</td>
+    </tr>
+    <tr>
+    <td><code>add 2</code></td>
+    <td>Adds the value in your hand to the value in <code>2</code></td>
+    </tr>
+    <tr>
+    <td><code>sub 3</code></td>
+    <td>Subtracts from the value in your hand the value in <code>3</code></td>
+    </tr>
+    <tr>
+    <td><code>bumpup 1</code></td>
+    <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
+    </tr>
+    <tr>
+    <td><code>bumpdn 0</code></td>
+    <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
+    </tr>
+    <tr>
+    <td><code>jump label</code></td>
+    <td>Jumps to <code>label</code></td>
+    </tr>
+    <tr>
+    <td><code>jumpz label</code></td>
+    <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
+    </tr>
+    <tr>
+    <td><code>jumpn label</code></td>
+    <td>Jumps to <code>label</code> if the value in your hand is negative</td>
+    </tr>
+    </tbody>
+    </table>
+  </div>
 </section>
 <footer class="container">
 <p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Sandbox</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
+<p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
 </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/github");
+    editor.getSession().setTabSize(4);
+    editor.getSession().setUseSoftTabs(true);
+</script>
+<script type="text/javascript">
+
+var viewCode = debounce(function (code) {
+  var hrmv = new hrm_viewer();
+  hrmv.append_code_table('code-view', code);
+}, 250, false);
+
 var hrm = require('hrmsandbox');
 $(document).ready(function() {
+
+  var rendered = false;
+  var oldCode = '';
+  editor.getSession().on('change', function(e) {
+      var currentCode = editor.getValue();
+      if(currentCode == oldCode) {
+        return; //check to prevent multiple simultaneous triggers
+      }
+
+      oldCode = currentCode;
+      rendered = false;
+  });
+
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    if (e.target.id === 'view-tab' && !rendered) {
+      rendered = true;
+      viewCode(editor.getValue());
+    }
+  })
+
   $('#run').on('click', function () {
     console.log('run');
     $('#error').empty();
     try {
-      var source = $('#program').val();
-      var inbox = $('#inbox').val().split(/\n/).filter(function (v) { return v.trim().length > 0; }).map(Number);
+      var source = editor.getValue();
+      var inbox = $('#inbox').val().split(/\n/).filter(function (v) { return v.trim().length > 0; }).map(function (s) {
+        var n = Number(s);
+        return Number.isNaN(n) ? s : n;
+      });
       var variables = $.parseJSON($('#variables').val());
       var program = hrm.parse(source);
       var results = program.execute({ inbox: inbox, variables: variables });
       if (results && results.outbox) {
+        $('#stats').empty();
+        $('#stats').append('iterations: ' + results.iterations);
+
         $('#outbox').empty();
         for (var ii = 0; ii < results.outbox.length; ++ii) {
           $('#outbox').append(
               $('<li>').append(
-                results.outbox[ii].toString()
-              ));
+                $(typeof results.outbox[ii] !== 'number' ? '<span class="label label-primary">' : '<span class="label label-success">').append(results.outbox[ii].toString())
+              )
+          );
         }
       }
       $('#error').toggleClass('hidden', true);
@@ -168,6 +227,30 @@ $(document).ready(function() {
     }
   });
 });
+
+// From: Underscore.js 1.8.3
+// http://underscorejs.org
+// (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+// MIT License
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+};
+
 </script>
 </body>
 </html>
