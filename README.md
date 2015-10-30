@@ -1,6 +1,6 @@
 # hrmsandbox
 A sandbox for [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programs. There is a similar project [hrm-cpu](https://github.com/nrkn/hrm-cpu) which works under ES6, and 
-there are projects with [level data](https://github.com/atesgoral/hrm-level-data) and with [solutions](https://github.com/atesgoral/hrm-solutions).
+there are projects with [level data](https://github.com/atesgoral/hrm-level-data) and with [solutions](https://github.com/atesgoral/hrm-solutions). There is also an [excellent JavaScript viewer for web based projects](https://github.com/AlanDeSmet/human-resource-machine-viewer).
 
 ## Web Demo
 [Try a live demo of the HRM Sandbox.](https://s3.amazonaws.com/christopherwatford-com/hrm/hrmfiddle.html)
