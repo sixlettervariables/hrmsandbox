@@ -21,10 +21,24 @@ grunt.initConfig({
         }
       }
     },
+  },
+  uglify: {
+    options: {
+      preserveComments: false,
+      mangle: false,
+      banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
+              '<%= grunt.template.today("yyyy-mm-dd") %> */'
+    },
+    hrmBrowser: {
+      files: {
+        'build/hrm-browser.min.js': ['build/hrm-browser.js']
+      }
+    }
   }
 });
 
 grunt.loadNpmTasks('grunt-contrib-jshint');
+grunt.loadNpmTasks('grunt-contrib-uglify');
 grunt.loadNpmTasks('grunt-browserify');
 
-grunt.registerTask('default', ['jshint', 'browserify']);
+grunt.registerTask('default', ['browserify', 'uglify']);
