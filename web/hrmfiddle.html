@@ -6,18 +6,176 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HRM Fiddle</title>
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css" rel="stylesheet">
   <link href="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.css" rel="stylesheet">
   <style type="text/css" media="screen">
-      #editor {
+      .CodeMirror {
+        border: 1px solid #eee;
+        height: 100%;
+      }
+      .cm-wrap {
         position: relative;
-        height: 500px;
+height: 100%;
+background: #eee;
+box-sizing: border-box;
+}
+.cm-border {
+  background: #eee;
+  height: 100%;
+}
+      .breakpoints {width: .8em;}
+      .breakpoint { color: #822; }
+      .line-breakpoint { background-color: #ff7; }
+      .command-toolbar {
+        margin-top: 8px;
+        margin-left: 25px;
+      }
+      .modal-lg { left: -25%; }
+      .modal .hrmcode { z-index: 1; }
+      .modal .hrmcode > svg { z-index: 2; }
+
+      html, body
+      {
+      	margin: 0;			/* Remove body margin/padding */
+      	padding: 0;
+        height: 100%;
+        width: 100%;
+      	overflow: hidden;	/* Remove scroll bars on browser window */
+      }
+      #header { padding: 1em; }
+
+
+      #code-pane {
+        padding-top: 50px;
+      	min-width: 400px;
+        width: 60%;
+      }
+      #divider {
+        left: 60%;
+        width: 5px;
+        background: #ccc;
+      }
+      #other-pane {
+        padding-top: 50px;
+        left: 60%;
+        margin-left: 5px;
+      	min-width: 150px;
+      }
+
+      .alert {
+        margin: 5px;
       }
   </style>
+  <style type="text/css">
+  /*!
+
+  Split Pane v0.1
+
+  Copyright (c) 2012 Simon HagstrÃ¶m
+
+  Released under the MIT license
+  https://raw.github.com/shagstrom/split-pane/master/LICENSE
+
+  */
+  .split-pane {
+  	position: relative;
+  	height: 100%;
+  	width: 100%;
+  	overflow: hidden;
+  }
+
+  .split-pane.fixed-top > .split-pane-component,
+  .split-pane.fixed-bottom > .split-pane-component,
+  .split-pane.horizontal-percent > .split-pane-component {
+  	position: absolute;
+  	left: 0;
+  	width: 100%;
+  	overflow: auto;
+  	top: auto;
+  	bottom: 0;
+  	z-index: 1;
+  }
+
+  .split-pane.fixed-top > .split-pane-component:first-child,
+  .split-pane.fixed-bottom > .split-pane-component:first-child,
+  .split-pane.horizontal-percent > .split-pane-component:first-child {
+  	top: 0;
+  	bottom: auto;
+  }
+
+  .split-pane.fixed-top > .split-pane-divider,
+  .split-pane.fixed-bottom > .split-pane-divider,
+  .split-pane.horizontal-percent > .split-pane-divider {
+  	position: absolute;
+  	width: 100%;
+  	left: 0;
+  	cursor: ns-resize;
+  	cursor: n-resize\9;
+  	z-index: 2;
+  }
+
+  .split-pane.fixed-left > .split-pane-component,
+  .split-pane.fixed-right > .split-pane-component,
+  .split-pane.vertical-percent > .split-pane-component {
+  	position: absolute;
+  	top: 0;
+  	height: 100%;
+  	overflow: auto;
+  	left: auto;
+  	right: 0;
+  	z-index: 1;
+  }
+
+  .split-pane.fixed-left > .split-pane-component:first-child,
+  .split-pane.fixed-right > .split-pane-component:first-child,
+  .split-pane.vertical-percent > .split-pane-component:first-child {
+  	left: 0;
+  	right: auto;
+  }
+
+  .split-pane.fixed-left > .split-pane-divider,
+  .split-pane.fixed-right > .split-pane-divider,
+  .split-pane.vertical-percent > .split-pane-divider {
+  	position: absolute;
+  	height: 100%;
+  	top: 0;
+  	cursor: ew-resize;
+  	cursor: w-resize\9;
+  	z-index: 2;
+  }
+
+  .split-pane-resize-shim {
+  	position: absolute;
+  	top: 0;
+  	left: 0;
+  	width: 100%;
+  	height: 100%;
+  	z-index: 10000;
+  	display: none;
+  }
+
+  .split-pane.fixed-left > .split-pane-resize-shim,
+  .split-pane.fixed-right > .split-pane-resize-shim,
+  .split-pane.vertical-percent > .split-pane-resize-shim {
+  	cursor: ew-resize;
+  	cursor: w-resize\9;
+  }
+
+  .split-pane.fixed-top > .split-pane-resize-shim,
+  .split-pane.fixed-bottom > .split-pane-resize-shim,
+  .split-pane.horizontal-percent > .split-pane-resize-shim {
+  	cursor: ns-resize;
+  	cursor: n-resize\9;
+  }
+  </style>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://code.jquery.com/jquery-migrate-1.2.1.js"></script>
+  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/fa097f311e4982fc77d4837ddc5eabc035ad6ab5/web/splitter.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako_inflate.min.js"></script>
   <script src="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.js"></script>
-  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/a26b2cb45d108d5baf5a45b17e4666edaa00ccda/build/hrm-browser.min.js"></script>
+  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/fa097f311e4982fc77d4837ddc5eabc035ad6ab5/build/hrm-browser.min.js"></script>
+  <!--<script src="../build/hrm-browser.min.js"></script>-->
 
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -27,132 +185,261 @@
   <![endif]-->
 </head>
 <body>
-<header class="container">
-  <h1>HRM Fiddle</h1>
-  <p>I don't work for <a href="http://tomorrowcorporation.com">Tommorow Corporation</a>,
-    nor did I work on <a href="http://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a>. But I sure do love the game.</p>
-  <p>HRM Sandbox provides a place to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
-</header>
-<section class="container">
-  <div class="program col-lg-6 col-md-6 col-sm-12">
-    <div>
-        <button id="run" class="btn btn-primary pull-right">Run</button>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">HRM Fiddle</a>
     </div>
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#code" aria-controls="code" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-list-alt"></i> Code</a></li>
-      <li role="presentation"><a href="#view" aria-controls="view" role="tab" data-toggle="tab" id="view-tab"><i class="glyphicon glyphicon-eye-open"></i> View</a></li>
-    </ul>
-    <!-- Tab panes -->
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="code">
-        <div id="editor">-- HUMAN RESOURCE MACHINE PROGRAM --
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Edit <span class="sr-only">(current)</span></a></li>
+        <!--<li><a href="#">Open</a></li>-->
+        <!--<li><a href="#">Save</a></li>-->
+      </ul>
+      <div class="nav navbar-nav btn-toolbar command-toolbar">
+        <button type="button" id="view" class="btn btn-default" title="View" data-toggle="modal" data-target="#viewModal"><i class="glyphicon glyphicon-eye-open"></i><span class="sr-only">View</span></button>
+        <button type="button" id="run" class="btn btn-success" title="Play"><i class="glyphicon glyphicon-play"></i><span class="sr-only">Play</span></button>
+        <button type="button" id="resume" class="btn btn-success hidden" title="Resume" disabled><i class="glyphicon glyphicon-play"></i><span class="sr-only">Resume</span></button>
+        <button type="button" id="runToEnd" class="btn btn-success" title="Play to End"><i class="glyphicon glyphicon-fast-forward"></i><span class="sr-only">Play to End</span></button>
+        <button type="button" id="stepInto" class="btn btn-primary" title="Step"><i class="glyphicon glyphicon-step-forward"></i><span class="sr-only">Step</span></button>
+        <button type="button" id="pause" class="btn btn-warning" title="Pause" disabled><i class="glyphicon glyphicon-pause"></i><span class="sr-only">Pause</span></button>
+        <button type="button" id="stop" class="btn btn-danger" title="Stop" disabled><i class="glyphicon glyphicon-stop"></i><span class="sr-only">Stop</span></button>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+        <li><a href="#" data-toggle="modal" data-target="#helpModal">Help</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div>
+</nav>
+
+<div id="layout" class="split-pane fixed-left">
+  <div id="code-pane" class="split-pane-component">
+    <div class="cm-wrap">
+      <div class="cm-border">
+        <div id="error-panel">
+          <div class="alert alert-dismissable alert-danger hidden" role="alert" id="error">
+            <!--<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>-->
+            <p id="error-content"></p>
+          </div>
+        </div>
+        <textarea id="editor">-- HUMAN RESOURCE MACHINE PROGRAM --
 
 a:
-  inbox
-  add 9
-  copyto 0
-  bumpup 0
-  copyfrom [8]
-  outbox
-  jump a</div>
+    inbox
+    add 9
+    copyto 0
+    bumpup 0
+    copyfrom [8]
+    outbox
+    jump a
+</textarea>
       </div>
-      <div role="tabpanel" class="tab-pane" id="view"><div class="hrmcode" id="code-view">Loading View...</div></div>
     </div>
-
-    <div class="alert alert-danger hidden" role="alert" id="error"></div>
   </div>
-  <div class="inputs col-lg-3 col-md-3 col-sm-3">
-   <h2>Inbox <small>one per line</small></h2>
-   <textarea id="inbox" class="form-control" rows="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">1
+
+  <div id="divider" class="split-pane-divider"></div>
+
+  <div id="other-pane" class="split-pane-component">
+    <div class="container-fluid">
+      <div class="inputs col-lg-6 col-md-6 col-sm-12">
+       <h4>Inbox <small>[<a href="#edit">edit</a>]</small></h4>
+       <!--<ul id="inbox-view" class="list-unstyled">
+         <li><span class="label label-success">1</span></li>
+         <li><span class="label label-success">2</span></li>
+         <li><span class="label label-success">3</span></li>
+         <li><span class="label label-success">4</span></li>
+       </ul>-->
+       <textarea id="inbox" class="form-control" rows="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">1
 2
 3
-4</textarea>
-  </div>
-<div class="inputs col-lg-3 col-md-3 col-sm-3">
-  <h2>Floor <small>JSON</small></h2>
-  <textarea id="variables" class="form-control" rows="5"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
-  "8": 0,
-  "9": -3
+4
+</textarea>
+      </div>
+      <div class="outputs col-lg-6 col-md-6 col-sm-12">
+        <h4>Outbox <small id="stats"></small></h4>
+        <ul id="outbox" class="list-unstyled">
+        </ul>
+      </div>
+      <div class="inputs col-lg-12 col-md-12 col-sm-12">
+      <h4>Floor <small>JSON</small></h4>
+      <textarea id="variables" class="form-control" rows="5"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
+"8": 0,
+"9": -3
 }</textarea>
+      </div>
+    </div>
   </div>
-  <div class="outputs col-lg-3 col-md-3 col-sm-3">
-    <h2>Outbox <small id="stats"></small></h2>
-    <ul id="outbox" class="list-unstyled">
-    </ul>
+</div>
+
+<!-- View Code Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="viewModalLabel">Code Visualizer</h4>
+      </div>
+      <div class="modal-body">
+        <div class="hrmcode" id="code-view">Loading View...</div>
+      </div>
+    </div>
   </div>
-</section>
-<section class="container">
-  <div class="help">
-    <h2><a id="user-content-hrm-sandbox-instruction-set" class="anchor" href="#hrm-sandbox-instruction-set" aria-hidden="true"></a>HRM Sandbox Instruction Set</h2>
-    <table class="table table-striped small"><thead>
-    <tr>
-    <th>Instruction</th>
-    <th>Description</th>
-    </tr>
-    </thead><tbody>
-    <tr>
-    <td><code>inbox</code></td>
-    <td>Takes the value from the top of the inbox and places it in your hand</td>
-    </tr>
-    <tr>
-    <td><code>outbox</code></td>
-    <td>Takes the value from your hand and places it on the top of the inbox</td>
-    </tr>
-    <tr>
-    <td><code>copyto 4</code></td>
-    <td>Copies the value in your hand into <code>4</code></td>
-    </tr>
-    <tr>
-    <td><code>copyfrom 4</code></td>
-    <td>Copies the value from <code>4</code> into your hand</td>
-    </tr>
-    <tr>
-    <td><code>copyfrom [1]</code></td>
-    <td>Copies the value from the location pointed to by <code>1</code> into your hand</td>
-    </tr>
-    <tr>
-    <td><code>add 2</code></td>
-    <td>Adds the value in your hand to the value in <code>2</code></td>
-    </tr>
-    <tr>
-    <td><code>sub 3</code></td>
-    <td>Subtracts from the value in your hand the value in <code>3</code></td>
-    </tr>
-    <tr>
-    <td><code>bumpup 1</code></td>
-    <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
-    </tr>
-    <tr>
-    <td><code>bumpdn 0</code></td>
-    <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
-    </tr>
-    <tr>
-    <td><code>jump label</code></td>
-    <td>Jumps to <code>label</code></td>
-    </tr>
-    <tr>
-    <td><code>jumpz label</code></td>
-    <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
-    </tr>
-    <tr>
-    <td><code>jumpn label</code></td>
-    <td>Jumps to <code>label</code> if the value in your hand is negative</td>
-    </tr>
-    </tbody>
-    </table>
+</div>
+
+<!-- About Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="aboutModalLabel">About HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <p>I don't work for <a href="http://tomorrowcorporation.com">Tommorow Corporation</a>,
+          nor did I work on <a href="http://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a>. But I sure do love the game.</p>
+        <p>HRM Fiddle provides a sandbox to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
+        <p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Fiddle</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
+        <p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
+        <p><b>Split Panes</b> provided by <a href="https://raw.github.com/shagstrom/split-pane">Simon Hagström's Split Pane</a> project.</p>
+      </div>
+    </div>
   </div>
-</section>
-<footer class="container">
-<p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Sandbox</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
-<p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
-</footer>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js" type="text/javascript" charset="utf-8"></script>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="helpModalLabel">Help</h4>
+      </div>
+      <div class="modal-body">
+        <div class="help">
+          <h2>Instruction Set</h2>
+          <table class="table table-striped small"><thead>
+          <tr>
+          <th>Instruction</th>
+          <th>Description</th>
+          </tr>
+          </thead><tbody>
+          <tr>
+          <td><code>inbox</code></td>
+          <td>Takes the value from the top of the inbox and places it in your hand</td>
+          </tr>
+          <tr>
+          <td><code>outbox</code></td>
+          <td>Takes the value from your hand and places it on the top of the inbox</td>
+          </tr>
+          <tr>
+          <td><code>copyto 4</code></td>
+          <td>Copies the value in your hand into <code>4</code></td>
+          </tr>
+          <tr>
+          <td><code>copyfrom 4</code></td>
+          <td>Copies the value from <code>4</code> into your hand</td>
+          </tr>
+          <tr>
+          <td><code>copyfrom [1]</code></td>
+          <td>Copies the value from the location pointed to by <code>1</code> into your hand</td>
+          </tr>
+          <tr>
+          <td><code>add 2</code></td>
+          <td>Adds the value in your hand to the value in <code>2</code></td>
+          </tr>
+          <tr>
+          <td><code>sub 3</code></td>
+          <td>Subtracts from the value in your hand the value in <code>3</code></td>
+          </tr>
+          <tr>
+          <td><code>bumpup 1</code></td>
+          <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
+          </tr>
+          <tr>
+          <td><code>bumpdn 0</code></td>
+          <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
+          </tr>
+          <tr>
+          <td><code>jump label</code></td>
+          <td>Jumps to <code>label</code></td>
+          </tr>
+          <tr>
+          <td><code>jumpz label</code></td>
+          <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
+          </tr>
+          <tr>
+          <td><code>jumpn label</code></td>
+          <td>Jumps to <code>label</code> if the value in your hand is negative</td>
+          </tr>
+          </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/selection/mark-selection.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/selection/active-line.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/mode/simple.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-    var editor = ace.edit("editor");
+/* Example definition of a simple mode that understands a subset of
+ * JavaScript:
+ */
+
+CodeMirror.defineSimpleMode("hrm", {
+  // The start state contains the rules that are intially used
+  start: [
+    // Rules are matched in the order in which they appear, so there is
+    // no ambiguity between this one and the one above
+    {regex: /(?:inbox|outbox)\b/i,
+     token: "keyword"},
+    {regex: /(copyfrom|copyto|add|sub|bumpup|bumpdn|comment|define\s+(?:comment|label))\s+([0-9]+)/i,
+     token: ["keyword", "number"]},
+     {regex: /(copyfrom|copyto|add|sub|bumpup|bumpdn|comment|define\s+(?:comment|label))\s+\[\s*([0-9]+)\s*\]/i,
+      token: ["keyword", "number"]},
+    {regex: /--.*/, token: "comment"},
+    {regex: /(jump|jumpz|jumpn)\s+([a-zA-Z]+)/, token: ["keyword", null, "label-dest"]},
+    {regex: /([a-zA-Z]+):/, token: ["label"]}
+  ],
+  // The meta property contains global information about the mode. It
+  // can contain properties like lineComment, which are supported by
+  // all modes, and also directives like dontIndentStates, which are
+  // specific to simple modes.
+  meta: {
+    dontIndentStates: ["comment"],
+    lineComment: "--"
+  }
+});
+
+  var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+    mode: 'hrm',
+    lineNumbers: true,
+    styleActiveLine: true,
+    viewportMargin: Infinity,
+    gutters: ["CodeMirror-linenumbers", "breakpoints"]
+  });
+
+  function makeMarker() {
+    var marker = document.createElement("div");
+    marker.style.color = "#822";
+    marker.innerHTML = "●";
+    return marker;
+  }
+    /*var editor = ace.edit("editor");
     editor.setTheme("ace/theme/github");
     editor.getSession().setTabSize(4);
-    editor.getSession().setUseSoftTabs(true);
+    editor.getSession().setUseSoftTabs(true);*/
 </script>
 <script type="text/javascript">
 
@@ -163,10 +450,14 @@ var viewCode = debounce(function (code) {
 
 var hrm = require('hrmsandbox');
 $(document).ready(function() {
+	$('div.split-pane').splitPane();
+
+  var program = undefined;
+  var state = undefined;
 
   var rendered = false;
   var oldCode = '';
-  editor.getSession().on('change', function(e) {
+  editor.on('change', function(e) {
       var currentCode = editor.getValue();
       if(currentCode == oldCode) {
         return; //check to prevent multiple simultaneous triggers
@@ -176,56 +467,281 @@ $(document).ready(function() {
       rendered = false;
   });
 
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    if (e.target.id === 'view-tab' && !rendered) {
+  $('#viewModal').on('shown.bs.modal', function (e) {
+    if (!rendered) {
       rendered = true;
       viewCode(editor.getValue());
     }
-  })
+  });
 
-  $('#run').on('click', function () {
-    console.log('run');
-    $('#error').empty();
+  var _breakpoints = [];
+  function setBreakpoints() {
+    if (program) {
+      program.setBreakpoints(_breakpoints);
+    }
+  }
+
+  function hasBreakpoint(breakpoints, bp) {
+    return breakpoints.indexOf(bp + 1) >= 0;
+  }
+
+  function addRemoveBreakpoint(breakpoints, bp) {
+    bp = bp + 1;
+    var idx = breakpoints.indexOf(bp);
+    if (idx < 0) {
+      breakpoints.push(bp);
+    }
+    else {
+      breakpoints.splice(idx, 1);
+    }
+
+    setBreakpoints();
+  }
+
+  editor.on("gutterClick", function(cm, n) {
+    var info = cm.lineInfo(n);
+    cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : makeMarker());
+    addRemoveBreakpoint(_breakpoints, info.line);
+  });
+
+  function parseHrm() {
     try {
       var source = editor.getValue();
-      var inbox = $('#inbox').val().split(/\n/).filter(function (v) { return v.trim().length > 0; }).map(function (s) {
-        var n = Number(s);
-        return Number.isNaN(n) ? s : n;
-      });
-      var variables = $.parseJSON($('#variables').val());
-      var program = hrm.parse(source);
-      var results = program.execute({ inbox: inbox, variables: variables });
-      if (results && results.outbox) {
-        $('#stats').empty();
-        $('#stats').append('iterations: ' + results.iterations);
-
-        $('#outbox').empty();
-        for (var ii = 0; ii < results.outbox.length; ++ii) {
-          $('#outbox').append(
-              $('<li>').append(
-                $(typeof results.outbox[ii] !== 'number' ? '<span class="label label-primary">' : '<span class="label label-success">').append(results.outbox[ii].toString())
-              )
-          );
-        }
-      }
-      $('#error').toggleClass('hidden', true);
+      program = hrm.parse(source);
     } catch(error) {
+      program = undefined;
+      state = undefined;
+
       console.error(error);
+
+      editor.setOption("readOnly", false);
+
       $('#error').toggleClass('hidden', false);
       if (error.name && error.name === 'SyntaxError') {
         var loc = error.location.start;
-        $('#error').append('<b>Error parsing HRM program, aborted.</b><br />' +
+        $('#error-content').append('<b>Error parsing HRM program, aborted.</b><br />' +
           'Line ' + loc.line + ' Column ' + loc.column + '<br />' +
           error.message
         );
       }
       else {
-        $('#error').append('<b>Error running HRM program, aborted.</b><br />' +
+        $('#error-content').append('<b>Error running HRM program, aborted.</b><br />' +
           error.message
         );
       }
     }
+  }
+
+  function lineFromState(s) {
+    if (s.ip >= 0 && s.ip < program._program.statements.length) {
+      return program._program.statements[s.ip]._location.start.line - 1;
+    }
+    else {
+      return 0;
+    }
+  }
+
+  function locFromState(s) {
+    if (s.ip >= 0 && s.ip < program._program.statements.length) {
+      var l = program._program.statements[s.ip]._location;
+      return {
+        start: { line: l.start.line - 1, column: 0 },
+        end: { line: l.end.line - 1, column: l.end.column - 1 }
+      };
+    }
+    else {
+      return { start: {}, end: {} };
+    }
+  }
+
+  $('#resume').on('click', function () {
+    if (state && state.isAtBreakpoint) {
+      if (speed) {
+        runSteps(speed);
+      }
+      else {
+        runToEnd();
+      }
+    }
   });
+
+  $('#run').on('click', function () {
+    speed = 333;
+    run('step', { speed: speed });
+  });
+
+  $('#stepInto').on('click', function () {
+    if (state) {
+      runSteps();
+    }
+    else {
+      run('step');
+    }
+  });
+
+  $('#runToEnd').on('click', function () {
+    if (state && state.isAtBreakpoint) {
+      runToEnd();
+    }
+    else {
+      run('toEnd');
+    }
+  });
+
+  var lastMark = undefined;
+
+  function run(how, options) {
+    options = options || {};
+    $('#error-content').empty();
+
+    parseHrm();
+    if (program === undefined) return;
+
+    var inbox = $('#inbox').val().split(/[, \t\n\"']/).filter(function (v) { return v.trim().length > 0; }).map(function (s) {
+      var n = Number(s);
+      return Number.isNaN(n) ? s : n;
+    });
+    var variables = $.parseJSON($('#variables').val());
+
+    state = program.createState({
+      inbox: inbox,
+      variables: variables
+    });
+
+    editor.setOption('readOnly', true);
+    editor.setCursor(lineFromState(state));
+
+    setBreakpoints();
+
+    $('#error').toggleClass('hidden', true);
+    if (how === 'step') {
+      if (options.speed !== undefined) {
+        runSteps(options.speed);
+      }
+      else {
+        runSteps();
+      }
+    }
+    else {
+      runToEnd();
+    }
+  }
+
+  function runSteps(speed) {
+    $('#resume').toggleClass('hidden', false);
+    $('#run').toggleClass('hidden', true);
+    $('#resume').prop('disabled', true);
+    var intervalId = undefined;
+    if (speed) {
+      intervalId = setInterval(doStep, speed);
+    }
+    else {
+        doStep();
+    }
+
+    function doStep() {
+      try {
+        var done = false;
+        var step = program.step(state);
+        if (!step) {
+          editor.setOption('readOnly', false);
+          $('#resume').toggleClass('hidden', true);
+          $('#run').toggleClass('hidden', false);
+          clearInterval(intervalId);
+          done = true;
+        }
+
+        editor.setCursor(lineFromState(state));
+        if (lastMark) { lastMark.clear(); lastMark = undefined; }
+        if (step === 'break') {
+          var loc = locFromState(state);
+          lastMark = editor.markText({line: loc.start.line, ch: loc.start.column}, {line: loc.end.line, ch: loc.end.column}, {className: "line-breakpoint"});
+          clearInterval(intervalId);
+
+          $('#resume').prop('disabled', false);
+        }
+
+        updateUI(state);
+
+        if (done) {
+          program = undefined;
+          state = undefined;
+        }
+      } catch (error) {
+        console.error(error);
+        clearInterval(intervalId);
+
+        $('#resume').toggleClass('hidden', true);
+        $('#run').toggleClass('hidden', false);
+
+        editor.setOption('readOnly', false);
+        $('#error').toggleClass('hidden', false);
+        $('#error-content').append('<b>Error running HRM program, aborted.</b><br />' +
+          error.message
+        );
+      }
+    }
+  }
+
+  function runToEnd() {
+    $('#resume').toggleClass('hidden', false);
+    $('#run').toggleClass('hidden', true);
+    $('#resume').prop('disabled', true);
+    try {
+      var done = false;
+      var step = program.resume(state);
+      if (!step) {
+        editor.setOption('readOnly', false);
+        $('#resume').toggleClass('hidden', true);
+        $('#run').toggleClass('hidden', false);
+        done = true;
+      }
+
+      editor.setCursor(lineFromState(state));
+      if (lastMark) { lastMark.clear(); lastMark = undefined; }
+      if (step === 'break') {
+        var loc = locFromState(state);
+        lastMark = editor.markText({line: loc.start.line, ch: loc.start.column}, {line: loc.end.line, ch: loc.end.column}, {className: "line-breakpoint"});
+        $('#resume').prop('disabled', false);
+      }
+      else {
+        $('#resume').toggleClass('hidden', true);
+      }
+
+      updateUI(state);
+
+      if (done) {
+        program = undefined;
+        state = undefined;
+      }
+    } catch (error) {
+      console.error(error);
+
+      $('#resume').toggleClass('hidden', true);
+      $('#run').toggleClass('hidden', false);
+
+      editor.setReadOnly(false);
+      $('#error').toggleClass('hidden', false);
+      $('#error-content').append('<b>Error running HRM program, aborted.</b><br />' +
+        error.message
+      );
+    }
+  }
+
+  function updateUI(state) {
+    $('#stats').empty();
+    $('#stats').append('iterations: ' + (state.iterations - state.labelsHit));
+
+    $('#outbox').empty();
+    for (var ii = 0; ii < state.outbox.length; ++ii) {
+      var isNumber = typeof state.outbox[ii] !== 'number';
+      $('#outbox').append(
+          $('<li>').append(
+            $(isNumber ? '<span class="label label-primary">' : '<span class="label label-success">').append(state.outbox[ii].toString())
+          )
+      );
+    }
+  }
 });
 
 // From: Underscore.js 1.8.3
