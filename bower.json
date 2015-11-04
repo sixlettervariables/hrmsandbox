@@ -1,0 +1,25 @@
+{
+  "name": "hrmsandbox",
+  "version": "0.5.0",
+  "homepage": "https://github.com/sixlettervariables/hrmsandbox",
+  "authors": [
+    "Christopher Watford <christopher.watford@gmail.com>"
+  ],
+  "description": "HRM Sandbox",
+  "keywords": [
+    "hrm"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "pako": "~0.2.8",
+    "human-resource-machine-viewer": "git://github.com/AlanDeSmet/human-resource-machine-viewer#gh-pages"
+  }
+}
