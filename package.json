@@ -1,0 +1,22 @@
+{
+  "name": "hrmsandbox-demo",
+  "version": "1.0.0",
+  "description": "HRM Fiddle Demo",
+  "main": "index.html",
+  "dependencies": {
+    "hrmsandbox": "^0.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sixlettervariables/hrmsandbox.git"
+  },
+  "keywords": [
+    "hrm"
+  ],
+  "author": "Christopher A. Watford <christopher.watford@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sixlettervariables/hrmsandbox/issues"
+  },
+  "homepage": "https://github.com/sixlettervariables/hrmsandbox#readme"
+}
