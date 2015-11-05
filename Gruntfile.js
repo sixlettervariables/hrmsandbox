@@ -4,7 +4,7 @@ var grunt = require('grunt');
 grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
   curl: {
-    'test/fixtures/hrm-solutions.json': 'https://raw.githubusercontent.com/atesgoral/hrm-solutions/gh-pages/data/manifest.json',
+    'test/fixtures/hrm-solutions.json': 'https://raw.githubusercontent.com/atesgoral/hrm-solutions/gh-pages/data/index.json',
   },
   jshint: {
     options: {
@@ -17,7 +17,7 @@ grunt.initConfig({
         jquery: true,
         browser: true,
         globals: {
-          hrm_viewer: true,
+          HRMViewer: true,
           HrmProgram: true,
           HrmProgramState: true,
           CodeMirror: true,

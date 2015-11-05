@@ -114,6 +114,7 @@ along with human-resource-machine-view.  If not, see
 .hrmcode .jumppath {
 	stroke: #8d8dc1;
 	stroke-width: 0.3em;
+	fill: transparent;
 }
 .hrmcode .jumppatharrow {
 	stroke: #8d8dc1;
@@ -122,4 +123,20 @@ along with human-resource-machine-view.  If not, see
 }
 .hrmcode > svg {
 	z-index: -1;
+}
+
+.hrmcode svg circle.stroke{
+	color: black;
+}
+
+.hrmcode svg polyline.stroke{
+	color: black;
+	stroke: black;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	fill: transparent;
+}
+
+.hrmcode tr.active td {
+	background-color: blue;
 }

@@ -28,13 +28,26 @@ html, body
   margin-left: 25px;
 }
 .modal-lg { left: -25%; }
-.modal .hrmcode { z-index: 1; }
-.modal .hrmcode > svg { z-index: 2; }
+
+#code-view {
+  height: 100%;
+}
+
+.hrmcode { z-index: 1; }
+.hrmcode > svg { z-index: 2; }
+.hrmcode tr.active td {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.progress {
+  margin-bottom: 0px;
+  height: 4px;
+}
 
 #header { padding: 1em; }
 
 #code-pane {
-  padding-top: 50px;
+  padding-top: 54px;
   min-width: 400px;
   width: 60%;
 }
@@ -46,7 +59,7 @@ html, body
 }
 
 #other-pane {
-  padding-top: 50px;
+  padding-top: 54px;
   left: 60%;
   margin-left: 5px;
   min-width: 150px;

@@ -89,9 +89,9 @@ the code is drawn; if the font loads after the code the jump
 arrows will be misaligned.
 <pre>
 &lt;script&gt;
+var hrmv;
 function fonts_loaded() {
-	var hrmv = new hrm_viewer();
-	hrmv.download_and_append_code_table('code', "simple.asm");
+	hrmv = new HRMViewer('code', 'simple.asm');
 }
 WebFont.load({
 	google: { families: ['Passion One'] },
@@ -103,13 +103,33 @@ WebFont.load({
 
 <p>Step 4: Optionally adjust hrm.css to adjust the formatting.
 
+<p>The arrows showing jumps are dependent on the
+positioning of text in the table.  Anything that changes the
+table's layout will invalidate the jump arrows; they'll be
+mis-aligned. Changes include
+fonts loading, or the table having originally been created
+display:none and later revealed.  If a situation requires it,
+call updateJumpArrows:
+<pre>
+&lt;script&gt;
+function layoutChanged() {
+	hrmv.updateJumpArrows();
+}
+&lt;/script&gt;
+</pre>
+
+<p>You can highlight a particular line with setActiveLine,
+passing in the line number (from the original assembly) of the line to be highlighted.
+Only a single line is highlighted at a time; setActiveLine on a
+different line will remove the highlight from the previous one.
+Calling setActiveLine without arguments will clear the highlight.
+
 
 <div class="footer">Human Resource Machine Program Viewer ©2015 Alan De Smet</div>
 
 <script>
 function fonts_loaded() {
-	var hrmv = new hrm_viewer();
-	hrmv.download_and_append_code_table('code', "simple.asm");
+	var hrmv = new HRMViewer('code', 'simple.asm');
 }
 WebFont.load({
 	google: { families: ['Passion One'] },

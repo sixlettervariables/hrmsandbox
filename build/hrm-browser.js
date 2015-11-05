@@ -216,7 +216,7 @@ HrmProgram.prototype.do_inbox = function (state) {
 
 HrmProgram.prototype.do_outbox = function (state) {
   if (state.hand !== undefined) {
-    state.outbox.unshift(state.hand);
+    state.outbox.push(state.hand);
     return undefined;
   }
   else {
@@ -278,7 +278,7 @@ HrmProgram.prototype.do_jumpneg = function (state, label) {
 };
 
 HrmProgram.prototype.do_math = function(state, op, variable) {
-  if (state.hand === undefined) {
+  if (op !== 'bumpup' && op !== 'bumpdn' && state.hand === undefined) {
     throw new HrmProgramError('Cannot ' + op + ' with an empty hand.', state);
   }
   else if (!state.isDefined(variable.name)) {

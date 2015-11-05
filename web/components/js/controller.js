@@ -74,15 +74,31 @@ CP.setEditor = function (eltId) {
 CP.setCodeViewer = function (eltId, $modal) {
   var self = this;
 
+  this.hrmv = undefined;
+
   this.viewCode = debounce(function (code) {
-    var hrmv = new hrm_viewer();
-    hrmv.append_code_table(eltId, code);
+    self.hrmv = new HRMViewer(eltId, code);
   }, DELAY_MS_UPDATE_CODEVIEWER, false);
 
-  $modal.on('shown.bs.modal', function (e) {
-    if (self.shouldRenderCodeView) {
-      self.shouldRenderCodeView = false;
-      self.viewCode(self.editor.getValue());
+  var vv = true;
+  $('#view').on('click', function (e) {
+    if (vv) {
+      vv = false;
+
+      if (self.shouldRenderCodeView) {
+        self.shouldRenderCodeView = false;
+        self.viewCode(self.editor.getValue());
+      }
+      else if (self.hrmv !== undefined) {
+
+      }
+
+      $('#code-view').toggleClass('hidden', false);
+    }
+    else {
+      vv = true;
+
+      $('#code-view').toggleClass('hidden', true);
     }
   });
 };
@@ -193,7 +209,7 @@ CP.runSteps = function (speed) {
   }
 };
 
-CP.runToEnd = function runToEnd() {
+CP.runToEnd = function () {
   var nextUiState = UI_STATE_RUNNING;
   try {
     var done = false;
@@ -217,6 +233,30 @@ CP.runToEnd = function runToEnd() {
 
     this.onErrorCaught(error);
   }
+};
+
+CP.pause = function () {
+  var nextUiState = UI_STATE_STEPPED;
+  if (this.uiState == UI_STATE_RUNNING &&
+      this.intervalId !== undefined) {
+    clearInterval(this.intervalId);
+    this.intervalId = undefined;
+
+    this.updateUI(this.state, nextUiState);
+  }
+};
+
+CP.stop = function () {
+  if (this.uiState == UI_STATE_RUNNING &&
+      this.intervalId !== undefined) {
+    clearInterval(this.intervalId);
+    this.intervalId = undefined;
+  }
+
+  this.program = undefined;
+  this.state = undefined;
+
+  this.updateUI(this.state, UI_STATE_STOPPED);
 };
 
 CP.onErrorCaught = function (error) {
@@ -258,6 +298,32 @@ CP.updateUI = function (hrmState, nextUiState) {
   if (this.lastUiState !== this.uiState) {
     this.lastUiState = this.uiState;
 
+    // Update Edit State indicator
+    switch (this.uiState) {
+      case UI_STATE_STARTING:
+      case UI_STATE_RUNNING:
+      case UI_STATE_STEPPED:
+        $('#edit-state').toggleClass('active', true);
+        $('#edit-state').toggleClass('progress-bar-striped', true);
+        $('#edit-state').toggleClass('progress-bar-success', true);
+        $('#edit-state').toggleClass('progress-bar-warning', false);
+        break;
+
+      case UI_STATE_STOPPED:
+        $('#edit-state').toggleClass('active', false);
+        $('#edit-state').toggleClass('progress-bar-striped', false);
+        $('#edit-state').toggleClass('progress-bar-success', false);
+        $('#edit-state').toggleClass('progress-bar-warning', false);
+        break;
+
+      case UI_STATE_BREAK:
+        $('#edit-state').toggleClass('active', true);
+        $('#edit-state').toggleClass('progress-bar-striped', true);
+        $('#edit-state').toggleClass('progress-bar-success', false);
+        $('#edit-state').toggleClass('progress-bar-warning', true);
+        break;
+    }
+
     // Update fields
     switch (this.uiState) {
       case UI_STATE_STARTING:
@@ -283,13 +349,19 @@ CP.updateUI = function (hrmState, nextUiState) {
     // Update buttons
     switch (this.uiState) {
       case UI_STATE_STOPPED:
+        $('#run').prop('disabled', false);
+        $('#runToEnd').prop('disabled', false);
+        $('#stepInto').prop('disabled', false);
+        $('#pause').prop('disabled', true);
+        $('#stop').prop('disabled', true);
+        break;
       case UI_STATE_BREAK:
       case UI_STATE_STEPPED:
         $('#run').prop('disabled', false);
         $('#runToEnd').prop('disabled', false);
         $('#stepInto').prop('disabled', false);
         $('#pause').prop('disabled', true);
-        $('#stop').prop('disabled', true);
+        $('#stop').prop('disabled', false);
         break;
       case UI_STATE_RUNNING:
         $('#run').prop('disabled', true);
@@ -309,7 +381,8 @@ CP.updateUI = function (hrmState, nextUiState) {
   }
 
   // Update Editor
-  this.editor.setCursor(hrmState !== undefined ? this.lineFromState(hrmState) : 0);
+  var line = hrmState !== undefined ? this.lineFromState(hrmState) : 0;
+  this.editor.setCursor(line);
   if (this.lastMark) {
     this.lastMark.clear();
     this.lastMark = undefined;
@@ -324,6 +397,11 @@ CP.updateUI = function (hrmState, nextUiState) {
     );
   }
 
+  // Update Code Viewer
+  if (this.hrmv !== undefined) {
+    this.hrmv.setActiveLine(line);
+  }
+
   // Update Stats
   $('#stats').empty();
   if (hrmState !== undefined) {
@@ -333,7 +411,7 @@ CP.updateUI = function (hrmState, nextUiState) {
   // Update Outbox
   $('#outbox').empty();
   if (hrmState !== undefined) {
-    for (var ii = 0; ii < hrmState.outbox.length; ++ii) {
+    for (var ii = hrmState.outbox.length - 1; ii >= 0; --ii) {
       var isNumber = typeof hrmState.outbox[ii] === 'number';
       var wrapper = isNumber ? ELT_WRAPPER_NUMBER : ELT_WRAPPER_ALPHA;
       $('#outbox').append(
