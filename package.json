@@ -1,6 +1,6 @@
 {
   "name": "hrmsandbox",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Human Resource Machine Sandbox",
   "main": "lib/hrm-engine.js",
   "bin": {
@@ -11,6 +11,7 @@
     "build/",
     "examples/",
     "lib/",
+    "web/",
     "Gruntfile.js",
     "bower.json",
     "LICENSE",
