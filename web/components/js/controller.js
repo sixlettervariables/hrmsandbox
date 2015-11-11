@@ -260,21 +260,28 @@ CP.stop = function () {
 };
 
 CP.onErrorCaught = function (error) {
-  this.program = undefined;
-  var errorState = this.state;
-  this.state = undefined;
-
-  this.updateUI(errorState, UI_STATE_STOPPED);
+  this.updateUI(this.state, UI_STATE_STOPPED);
 
   //TODO: mark the line in error if we know about it!
 
   $('#error').toggleClass('hidden', false);
+  $('#error-content').empty();
+
+  var loc;
   if (error.name && error.name === 'SyntaxError') {
     if (error.location) {
-      var loc = error.location.start;
+      loc = error.location;
       $('#error-content').append('<b>Error parsing HRM program, aborted.</b><br />' +
-        'Line ' + loc.line + ' Column ' + loc.column + '<br />' +
+        'Line ' + loc.start.line + ' Column ' + loc.start.column + '<br />' +
         error.message
+      );
+
+      this.editor.setCursor(loc.start.line - 1);
+      if (this.lastMark) this.lastMark.clear();
+      this.lastMark = this.editor.markText(
+        { line: loc.start.line - 1, ch: loc.start.column - 1 },
+        { line: loc.end.line - 1, ch: loc.end.column - 1 },
+        { className: 'line-error' }
       );
     }
     else {
@@ -287,7 +294,21 @@ CP.onErrorCaught = function (error) {
     $('#error-content').append('<b>Error running HRM program, aborted.</b><br />' +
       error.message
     );
+    if (this.state) {
+      this.state.ip--;
+      loc = this.locFromState(this.state);
+      this.editor.setCursor(loc.start.line);
+      if (this.lastMark) this.lastMark.clear();
+      this.lastMark = this.editor.markText(
+        { line: loc.start.line, ch: loc.start.column },
+        { line: loc.end.line, ch: loc.end.column },
+        { className: 'line-error' }
+      );
+    }
   }
+
+  this.program = undefined;
+  this.state = undefined;
 };
 
 var ELT_WRAPPER_NUMBER = '<span class="label label-success">';

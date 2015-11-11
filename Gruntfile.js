@@ -3,9 +3,6 @@ var grunt = require('grunt');
 
 grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
-  curl: {
-    'test/fixtures/hrm-solutions.json': 'https://raw.githubusercontent.com/atesgoral/hrm-solutions/gh-pages/data/index.json',
-  },
   jshint: {
     options: {
       browser: false,
@@ -93,7 +90,5 @@ grunt.loadNpmTasks('grunt-contrib-uglify');
 grunt.loadNpmTasks('grunt-contrib-concat');
 grunt.loadNpmTasks('grunt-contrib-cssmin');
 grunt.loadNpmTasks('grunt-browserify');
-grunt.loadNpmTasks('grunt-curl');
 
-grunt.registerTask('update', ['curl']);
 grunt.registerTask('default', ['jshint', 'browserify', 'concat', 'uglify', 'cssmin']);

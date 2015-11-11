@@ -5,41 +5,41 @@
 -- Order 3 numbers from smallest to largest
 --
 a:
-    inbox
-    copyto 0
-    inbox
-    copyto 1
-    inbox
-    copyto 2
+    INBOX
+    COPYTO 0
+    INBOX
+    COPYTO 1
+    INBOX
+    COPYTO 2
 
 b:
-    copyfrom 0
-    copyto 9
-    sub 1
-    jumpn c
-    jumpz c
-    copyfrom 1
-    copyto 0
-    copyfrom 9
-    copyto 1
+    COPYFROM 0
+    COPYTO 9
+    SUB 1
+    JUMPN c
+    JUMPZ c
+    COPYFROM 1
+    COPYTO 0
+    COPYFROM 9
+    COPYTO 1
 
 c:
-    copyfrom 1
-    copyto 9
-    sub 2
-    jumpn d
-    jumpz d
-    copyfrom 2
-    copyto 1
-    copyfrom 9
-    copyto 2
-    jump b
+    COPYFROM 1
+    COPYTO 9
+    SUB 2
+    JUMPN d
+    JUMPZ d
+    COPYFROM 2
+    COPYTO 1
+    COPYFROM 9
+    COPYTO 2
+    JUMP b
 
 d:
-    copyfrom 0
-    outbox
-    copyfrom 1
-    outbox
-    copyfrom 2
-    outbox
-    jump a
+    COPYFROM 0
+    OUTBOX
+    COPYFROM 1
+    OUTBOX
+    COPYFROM 2
+    OUTBOX
+    JUMP a

@@ -6,15 +6,15 @@ CodeMirror.defineSimpleMode("hrm", {
   start: [
     // Rules are matched in the order in which they appear, so there is
     // no ambiguity between this one and the one above
-    {regex: /(?:inbox|outbox)\b/i,
+    {regex: /(?:INBOX|OUTBOX)\b/,
      token: "keyword"},
-    {regex: /(copyfrom|copyto|add|sub|bumpup|bumpdn|comment|define\s+(?:comment|label))\s+([0-9]+)/i,
+    {regex: /(COPYFROM|COPYTO|ADD|SUB|BUMPUP|BUMPDN|COMMENT|DEFINE\s+(?:COMMENT|LABEL))\s+([0-9]+)/,
      token: ["keyword", "number"]},
-     {regex: /(copyfrom|copyto|add|sub|bumpup|bumpdn|comment|define\s+(?:comment|label))\s+\[\s*([0-9]+)\s*\]/i,
+     {regex: /(COPYFROM|COPYTO|ADD|SUB|BUMPUP|BUMPDN|COMMENT|DEFINE\s+(?:COMMENT|LABEL))\s+\[\s*([0-9]+)\s*\]/,
       token: ["keyword", "number"]},
     {regex: /--.*/, token: "comment"},
-    {regex: /(jump|jumpz|jumpn)\s+([a-zA-Z]+)/, token: ["keyword", null, "label-dest"]},
-    {regex: /([a-zA-Z]+):/, token: ["label"]}
+    {regex: /(JUMP|JUMPZ|JUMPN)\s+([a-zA-Z][a-zA-Z0-9]*)/, token: ["keyword", null, "label-dest"]},
+    {regex: /([a-zA-Z][a-zA-Z0-9]*):/, token: ["label"]}
   ],
   // The meta property contains global information about the mode. It
   // can contain properties like lineComment, which are supported by

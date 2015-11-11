@@ -267,6 +267,7 @@ html, body
 .breakpoints {width: .8em;}
 .breakpoint { color: #822; }
 .line-breakpoint { background-color: #ff7; }
+.line-error { background-color: #f2dede; }
 .command-toolbar {
   margin-top: 8px;
   margin-left: 25px;

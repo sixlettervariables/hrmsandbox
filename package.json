@@ -1,6 +1,6 @@
 {
   "name": "hrmsandbox",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Human Resource Machine Sandbox",
   "main": "lib/hrm-engine.js",
   "bin": {
@@ -8,14 +8,11 @@
   },
   "files": [
     "bin/hrmsandbox",
-    "build/hrm-browser.js",
-    "build/hrm-browser.min.js",
-    "examples/min-of-3.hrm",
-    "examples/README.md",
-    "lib/hrm-engine.js",
-    "lib/hrmProgramError.js",
-    "lib/hrmProgramState.js",
+    "build/",
+    "examples/",
+    "lib/",
     "Gruntfile.js",
+    "bower.json",
     "LICENSE",
     "README.md"
   ],
@@ -35,12 +32,11 @@
     "grunt-contrib-cssmin": "^0.14.0",
     "grunt-contrib-jshint": "^0.11.3",
     "grunt-contrib-uglify": "^0.10.0",
-    "grunt-curl": "^2.2.0",
     "tap": "^2.2.0",
     "tape": "^4.2.2"
   },
   "dependencies": {
-    "hrm-grammar": "^2.0.4",
+    "hrm-grammar": "^2.2.1",
     "hrm-level-data": "^1.1.0",
     "hrm-level-inbox-generator": "0.0.2",
     "hrm-level-outbox-generator": "0.0.1",
