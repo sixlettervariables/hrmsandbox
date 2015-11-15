@@ -134,13 +134,20 @@ CP.parseSource = function () {
 
     var source = this.editor.getValue();
     this.program = HrmProgram.parse(source);
+    if (this.program && this.program._program &&
+        this.program._program.undefinedLabels.length > 0) {
+      this.state.ip = this.program._program.statements.indexOf(
+        this.program._program.undefinedLabels[0].referencedBy) + 1;
+      throw new HrmProgramError(
+        'Undefined label: ' + this.program._program.undefinedLabels[0].label,
+        this.state);
+    }
 
     this.assignBreakpoints();
 
     this.updateUI(this.state, UI_STATE_STARTING);
 
     return true;
-
   } catch(error) {
     console.error(error);
     this.onErrorCaught(error);

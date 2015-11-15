@@ -25,7 +25,7 @@ solutions.forEach(function (solution) {
       assert.ok(inbox, 'Inbox is not empty');
       assert.ok(outbox, 'Expected Outbox is not empty');
 
-      var program = hrm.parse(solution.source);
+      var program = hrm.parse(solution.source, { level: level, validateTiles: true });
       assert.ok(program, 'Could parse solution');
 
       var state = program.createState({

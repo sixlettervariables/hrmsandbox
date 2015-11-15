@@ -17,6 +17,7 @@ grunt.initConfig({
           HRMViewer: true,
           HrmProgram: true,
           HrmProgramState: true,
+          HrmProgramError: true,
           CodeMirror: true,
         }
       },
