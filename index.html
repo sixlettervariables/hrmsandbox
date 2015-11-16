@@ -31,9 +31,11 @@
     </div>
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
+        <li><a id="load" href="#" data-toggle="modal" data-target="#loadModal">Load</a></li>
         <li class="active"><a href="#">Edit <span class="sr-only">(current)</span></a></li>
         <!--<li><a href="#">Open</a></li>-->
-        <!--<li><a href="#">Save</a></li>-->
+        <li><a id="save" href="#" data-toggle="modal" data-target="#saveModal">Save</a></li>
+        <!--<li><a id="share" href="#">Share</a></li>-->
       </ul>
       <div class="nav navbar-nav btn-toolbar command-toolbar">
         <button type="button" id="view" class="btn btn-default" title="View" data-toggle="button" aria-pressed="false" autocomplete="off"><i class="glyphicon glyphicon-eye-open"></i><span class="sr-only">View</span></button>
@@ -88,6 +90,21 @@ a:
 
   <div id="other-pane" class="split-pane-component">
     <div class="container-fluid">
+
+      <div class="level-select-area col-lg-12 col-md-12 col-sm-12">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">Level</div>
+            <select id="level-selector" class="form-control">
+              <option value="0" selected>0: HRM Fiddle Sandbox</option>
+            </select>
+          </div>
+        </div>
+        <blockquote>
+          <p id="level-instructions">Play around until stuff works, or doesn't.</p>
+        </blockquote>
+      </div>
+
       <div class="inputs col-lg-6 col-md-6 col-sm-12">
        <h4>Inbox <small>[<a href="#edit">edit</a>]</small></h4>
        <!--<ul id="inbox-view" class="list-unstyled">
@@ -113,6 +130,46 @@ a:
 "8": 0,
 "9": -3
 }</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="saveModalLabel">Save HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <input id="save-name" type="text" class="form-control" placeholder="Solution Name...">
+        <div id="save-errors"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="do-save" type="button" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Load Modal -->
+<div class="modal fade" id="loadModal" tabindex="-1" role="dialog" aria-labelledby="loadModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="loadModalLabel">Load HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <div class="load-saves-box">
+          <ul id="saves-to-load"></ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -147,7 +204,8 @@ a:
         <p>HRM Fiddle provides a sandbox to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
         <p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Fiddle</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
         <p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
-        <p><b>Split Panes</b> provided by <a href="https://raw.github.com/shagstrom/split-pane">Simon Hagström's Split Pane</a> project.</p>
+        <p><b>Split Panes</b> provided by <a href="https://github.com/shagstrom/split-pane">Simon Hagström's Split Pane</a> project.</p>
+        <p><b>Level Data</b>, <b>Inbox Generator</b>, and <b>Outbox Generator</b> provided by <a href="https://github.com/atesgoral">Ates Goral</a>.</p>
       </div>
     </div>
   </div>
@@ -163,6 +221,14 @@ a:
       </div>
       <div class="modal-body">
         <div class="help">
+          <h2>FAQ</h2>
+          <dl>
+            <dt>Where are my saves?</dt>
+            <dd>Saves are persisted to <code>localStorage</code>, so basically
+            only in your current browser.</dd>
+            <dt>What about saving to The Cloud<sup>&#8482;</sup>?</dt>
+            <dd>Soon.</dd>
+          </dl>
           <h2>Instruction Set</h2>
           <table class="table table-striped small"><thead>
           <tr>
@@ -236,7 +302,6 @@ a:
 <script src="hrmfiddle-dist.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 var controller = new Controller('editor');
-
 $(document).ready(function () {
 
   controller.setCodeViewer('code-view', $('#viewModal'));

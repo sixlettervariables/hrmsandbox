@@ -4,7 +4,7 @@
   "description": "HRM Fiddle Demo",
   "main": "index.html",
   "dependencies": {
-    "hrmsandbox": "^0.8.1"
+    "hrmsandbox": "^0.9.1"
   },
   "repository": {
     "type": "git",
