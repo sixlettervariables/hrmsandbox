@@ -154,14 +154,87 @@ CP.parseSource = function () {
   }
 
   return false;
+};
 
-  function readInbox($inbox) {
-    return $inbox.val().split(/[, \t\n\"']/).filter(function (v) {
-      return v.trim().length > 0;
-    }).map(function (s) {
-      var n = Number(s);
-      return Number.isNaN(n) ? s : n;
-    });
+var KEY_LOCALSTORAGE_LEVELS = 'hrmsandbox-Levels';
+var SAVE_VERSION = "0.0.2";
+
+CP.createSave = function (name) {
+  return {
+    name: name || (new Date().getTime().toString(16)),
+    when: new Date(),
+    level: this.getLevel(),
+    source: this.editor.getValue()
+  };
+};
+
+CP.saveSource = function (name) {
+  var saves = this.getSaves();
+
+  saves.solutions.push(this.createSave(name));
+  saves.solutions.sort(function (a, b) {
+    return -(a.when.localeCompare(b.when));
+  });
+
+  localStorage.setItem(KEY_LOCALSTORAGE_LEVELS, JSON.stringify(saves));
+
+  return saves;
+};
+
+CP.getSaves = function () {
+  var saves = localStorage.getItem(KEY_LOCALSTORAGE_LEVELS);
+  if (!saves) {
+    saves = { version: "0.0.1", solutions: [] };
+  }
+  else {
+    try {
+      saves = JSON.parse(saves);
+    } catch (e) {
+      console.error(e);
+      saves = { version: "0.0.1", solutions: [] };
+    }
+  }
+
+  return saves;
+};
+
+CP.getLevel = function () {
+  var level = $('#level-selector').val();
+  if (level === 0) {
+    return {
+      number: 0,
+      name: "HRM Sandbox",
+      instructions: "Play around until stuff works, or doesn't.",
+      commands: [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+      dereferencing: true,
+      comments: true,
+      labels: true,
+      floor: {
+        columns: 5,
+        rows: 5,
+        tiles: $.parseJSON($('#variables').val())
+      },
+      examples: [{
+          inbox: readInbox($('#inbox')),
+          outbox: [ ]
+      }]
+    };
+  } else {
+    return HrmLevelData[level];
+  }
+};
+
+CP.loadSave = function (save) {
+  this.editor.setValue(save.source);
+  $('#level-selector').val(HrmLevelData.findIndex(function (level) {
+    return level.number == save.level.number;
+  }));
+  $('#inbox').val(save.level.examples[0].inbox.join(", "));
+  if (save.level.floor) {
+    $('#variables').val(JSON.stringify(save.level.floor.tiles, null, 2));
+  }
+  else {
+    $('#variables').val("{}");
   }
 };
 
@@ -456,6 +529,74 @@ CP.bindVisuals = function() {
 
   $('div.split-pane').splitPane();
 
+  $('#level-selector').empty();
+  for (var ll = 0; ll < HrmLevelData.length; ++ll) {
+    var level = HrmLevelData[ll];
+    var opt = $('<option>', { value: ll });
+    opt.text(level.number + ': ' + level.name);
+    $('#level-selector').append(opt);
+  }
+  $('#level-selector').val(0);
+  $('#level-instructions').text(HrmLevelData[0].instructions);
+
+  $('#level-selector').change(function() {
+    self.stop();
+    var level = $(this).val();
+    $('#level-instructions').text(HrmLevelData[level].instructions);
+    $('#inbox').val(HrmLevelData[level].examples[0].inbox.join(", "));
+    if (HrmLevelData[level].floor) {
+      $('#variables').val(JSON.stringify(HrmLevelData[level].floor.tiles || {}, null, 2));
+    } else {
+      $('#variables').val("{}");
+    }
+  }).trigger('change');
+
+  $('#saveModal').on('shown.bs.modal', function () {
+    $('#save-errors').empty();
+    $('#save-name').val(undefined);
+    $('#save-name').focus();
+  });
+
+  $('#do-save').on('click', function () {
+    try {
+      self.saveSource($('#save-name').val());
+      $('#saveModal').modal('hide');
+    } catch (e) {
+      console.error(e);
+      var alert = $('<div class="alert alert-danger alert-dismissible" role="alert">');
+      alert.append('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+      alert.append('<strong>Could not save!</strong> ' + e.toString());
+      $('#save-errors').empty();
+      $('#save-errors').append(alert);
+    }
+  });
+
+  $('#saves-to-load').on('click', 'a.load-save', function () {
+    self.stop();
+    var id = $(this).attr('data-save-id');
+    var saves = self.getSaves();
+    $('#loadModal').modal('hide');
+    self.loadSave(saves.solutions[id]);
+  });
+
+  $('#loadModal').on('shown.bs.modal', function () {
+    $('#saves-to-load').empty();
+    var saves = self.getSaves();
+    if (saves && saves.solutions) {
+      for (var ss = 0; ss < saves.solutions.length; ++ss) {
+        var save = saves.solutions[ss];
+        var link = $('<a>', { class: 'load-save', href: "#", "data-save-id": ss });
+        link.text('Level ' + save.level.number + ': ' + save.name + ' (' + save.when + ')');
+        $('#saves-to-load').append(
+          $('<li>').append(link)
+        );
+      }
+    }
+    else {
+      $('#saves-to-load').append('<li>No saves found</li>');
+    }
+  });
+
   $('#run').on('click', function btnRunClick() {
     switch (self.uiState) {
       case UI_STATE_STOPPED:
@@ -544,6 +685,15 @@ CP.locFromState = function locFromState(s) {
   return { start: {}, end: {} };
 };
 
+function readInbox($inbox) {
+  return $inbox.val().split(/[, \t\n\"']/).filter(function (v) {
+    return v.trim().length > 0;
+  }).map(function (s) {
+    var n = Number(s);
+    return Number.isNaN(n) ? s : n;
+  });
+}
+
 // From: Underscore.js 1.8.3
 // http://underscorejs.org
 // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -569,4 +719,53 @@ function debounce(func, wait, immediate) {
       func.apply(context, args);
     }
 	};
+}
+
+//
+// Array.find and findIndex polyfills from MDN
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+//
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+}
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
 }

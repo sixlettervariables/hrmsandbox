@@ -18,6 +18,9 @@ grunt.initConfig({
           HrmProgram: true,
           HrmProgramState: true,
           HrmProgramError: true,
+          HrmLevelData: true,
+          HrmLevelInboxer: true,
+          HrmLevelOutboxer: true,
           CodeMirror: true,
         }
       },

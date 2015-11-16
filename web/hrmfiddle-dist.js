@@ -4016,8 +4016,33 @@ CodeMirror.defineSimpleMode("hrm", {
 window.HrmProgram = require('./hrm-engine.js');
 window.HrmProgramState = require('./hrmProgramState.js');
 window.HrmProgramError = require('./hrmProgramError.js');
+window.HrmLevelData = require('hrm-level-data').filter(function (level) {
+  return !level.cutscene;
+});
+window.HrmLevelData.unshift(
+  {
+    number: 0,
+    name: "HRM Sandbox",
+    instructions: "Play around until stuff works, or doesn't.",
+    commands: [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    dereferencing: true,
+    comments: true,
+    labels: true,
+    floor: {
+      columns: 5,
+      rows: 5,
+      tiles: { "8": 0, "9": -3 }
+    },
+    examples: [{
+        inbox: [ 1, 2, 3, 4 ],
+        outbox: [ ]
+    }]
+  }
+);
+window.HrmLevelInboxer = require('hrm-level-inbox-generator');
+window.HrmLevelOutboxer = require('hrm-level-outbox-generator');
 
-},{"./hrm-engine.js":2,"./hrmProgramError.js":3,"./hrmProgramState.js":4}],2:[function(require,module,exports){
+},{"./hrm-engine.js":2,"./hrmProgramError.js":3,"./hrmProgramState.js":4,"hrm-level-data":14,"hrm-level-inbox-generator":15,"hrm-level-outbox-generator":18}],2:[function(require,module,exports){
 /** hrmsandbox Engine
  *
  * Copyright (C) 2015 Christopher A Watford
@@ -7675,6 +7700,3818 @@ module.exports = function (options) {
   };
 };
 
+},{}],14:[function(require,module,exports){
+module.exports=[
+  {
+    "number": 1,
+    "name": "Mail Room",
+    "instructions": "Drag commands into this area to build a program.\n\nYour program should tell your worker to grab each thing from the INBOX, and drop it into the OUTBOX.",
+    "commands": [ "INBOX", "OUTBOX" ],
+    "examples": [
+      {
+        "inbox": [ 1, 9, 4 ],
+        "outbox": [ 1, 9, 4 ]
+      },
+      {
+        "inbox": [ 4, 3, 3 ],
+        "outbox": [ 4, 3, 3 ]
+      }
+    ],
+    "challenge": {
+      "size": 6,
+      "speed": 6
+    }
+  },
+  {
+    "number": 2,
+    "name": "Busy Mail Room",
+    "instructions": "Grab each thing from the INBOX, and drop each one into the OUTBOX.\n\nYou got a new command! You can drag JUMP's arrow to jump to different lines within your program.",
+    "commands": [ "INBOX", "OUTBOX", "JUMP" ],
+    "examples": [
+      {
+        "inbox": [ "B", "O", "O", "T", "S", "E", "Q" ],
+        "outbox": [ "B", "O", "O", "T", "S", "E", "Q" ]
+      }
+    ],
+    "challenge": {
+      "size": 3,
+      "speed": 25
+    }
+  },
+  {
+    "number": 3,
+    "name": "Copy Floor",
+    "instructions": "Ignore the INBOX for now, and just send the following 3 letters to the OUTBOX:\n\nB U G\n\nThe Facilities Management staff has placed some items over there on the carpet for you. If only there were a way you could pick them up...",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "JUMP" ],
+    "floor": {
+      "columns": 3,
+      "rows": 2,
+      "tiles": [ "U", "J", "X", "G", "B", "E" ]
+    },
+    "examples": [
+      {
+        "inbox": [ -99, -99, -99, -99 ],
+        "outbox": [ "B", "U", "G" ]
+      }
+    ],
+    "challenge": {
+      "size": 6,
+      "speed": 6
+    }
+  },
+  {
+    "number": 4,
+    "name": "Scrambler Handler",
+    "instructions": "Grab the first TWO things from the INBOX and drop them into the OUTBOX in the reverse order. Repeat until the INBOX is empty.\n\nYou got a new command! Feel free to COPYTO wherever you like on the carpet. It will be cleaned later.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "JUMP" ],
+    "floor": {
+      "columns": 3,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 4, 8, "A", "E", 2, 5 ],
+        "outbox": [ 8, 4, "E", "A", 5, 2 ]
+      }
+    ],
+    "challenge": {
+      "size": 7,
+      "speed": 21
+    }
+  },
+  {
+    "number": 5,
+    "name": "Coffee Time",
+    "cutscene": true
+  },
+  {
+    "number": 6,
+    "name": "Rainy Summer",
+    "instructions": "For each two things in the INBOX, add them together, and put the result in the OUTBOX.\n\nYou got a new command! It ADDs the contents of a tile on the floor to whatever value you're currently holding.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP" ],
+    "floor": {
+      "columns": 3,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 3, 3, 1, 4, -3, 5, 0, -1 ],
+        "outbox": [ 6, 5, 2, -1 ]
+      }
+    ],
+    "challenge": {
+      "size": 6,
+      "speed": 24
+    }
+  },
+  {
+    "number": 7,
+    "name": "Zero Exterminator",
+    "instructions": "Send all things that ARE NOT ZERO to the OUTBOX.\n\nYou got a new command! It jumps ONLY if the value you are holding is ZERO. Otherwise it continues to the next line.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP", "JUMPZ" ],
+    "floor": {
+      "columns": 3,
+      "rows": 3
+    },
+    "examples": [
+      {
+        "inbox": [ 8, 0, -4, "A", 0, 0, 9, 0 ],
+        "outbox": [ 8, -4, "A", 9 ]
+      }
+    ],
+    "challenge": {
+      "size": 4,
+      "speed": 23
+    }
+  },
+  {
+    "number": 8,
+    "name": "Tripler Room",
+    "instructions": "For each thing in the INBOX, TRIPLE it. And OUTBOX the result.\n\nSelf improvement tip: Where are we going with this? Please leave the high level decisions to management.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP" ],
+    "floor": {
+      "columns": 3,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 7, -5, 5, 0 ],
+        "outbox": [ 21, -15, 15, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 6,
+      "speed": 24
+    }
+  },
+  {
+    "number": 9,
+    "name": "Zero Preservation Initiative",
+    "instructions": "Send only the ZEROs to the OUTBOX.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP", "JUMPZ" ],
+    "floor": {
+      "columns": 3,
+      "rows": 3
+    },
+    "examples": [
+      {
+        "inbox": [ 2, 0, 1, "B", 0, 0, 6, 0 ],
+        "outbox": [ 0, 0, 0, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 5,
+      "speed": 25
+    }
+  },
+  {
+    "number": 10,
+    "name": "Octoplier Suite",
+    "instructions": "For each thing in the INBOX, multiply it by 8, and put the result in the OUTBOX.\n\nUsing a bunch of ADD commands is easy, but WASTEFUL! Can you do it using only 3 ADD commands? Management is watching.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP" ],
+    "floor": {
+      "columns": 5,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 2, -1, 3, 0 ],
+        "outbox": [ 16, -8, 24, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 9,
+      "speed": 36
+    }
+  },
+  {
+    "number": 11,
+    "name": "Sub Hallway",
+    "instructions": "For each two things in the INBOX, first subtract the 1st from the 2nd and put the result in the OUTBOX. AND THEN, subtract the 2nd from the 1st and put the result in the OUTBOX. Repeat.\n\nYou got a new command! SUBtracts the contents of a tile on the floor FROM whatever value you're currently holding.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "JUMP", "JUMPZ" ],
+    "floor": {
+      "columns": 3,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 4, 5, 8, 4, -9, -9, 5, -3 ],
+        "outbox": [ 1, -1, -4, 4, 0, 0, -8, 8 ]
+      }
+    ],
+    "challenge": {
+      "size": 10,
+      "speed": 40
+    }
+  },
+  {
+    "number": 12,
+    "name": "Tetracontiplier",
+    "instructions": "For each thing in the INBOX, multiply it by 40, and put the result in the OUTBOX.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "JUMP" ],
+    "floor": {
+      "columns": 5,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 2, -6, 5, 0 ],
+        "outbox": [ 80, -240, 200, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 14,
+      "speed": 56
+    }
+  },
+  {
+    "number": 13,
+    "name": "Equalization Room",
+    "instructions": "Get two things from the INBOX. If they are EQUAL, put ONE of them in the OUTBOX. Discard non-equal pairs. Repeat!\n\nYou got... COMMENTS! You can use them, if you like, to mark sections of your program.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "JUMP", "JUMPZ" ],
+    "comments": true,
+    "floor": {
+      "columns": 1,
+      "rows": 3
+    },
+    "examples": [
+      {
+        "inbox": [ 6, 1, 8, 8, 5, 0, -4, -4 ],
+        "outbox": [ 8, -4 ]
+      }
+    ],
+    "challenge": {
+      "size": 9,
+      "speed": 27
+    }
+  },
+  {
+    "number": 14,
+    "name": "Maximization Room",
+    "instructions": "Grab TWO things form the INBOX, and put only the BIGGER of the two in the OUTBOX. If they are equal, just pick either one. Repeat!\n\nYou got a new command! Jumps only if the thing you're holding is negative. (Less than zero.) Otherwise continues to the next line.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "floor": {
+      "columns": 3,
+      "rows": 1
+    },
+    "examples": [
+      {
+        "inbox": [ 4, 9, -8, -4, 9, 9, -6, -3 ],
+        "outbox": [ 9, -4, 9, -3 ]
+      }
+    ],
+    "challenge": {
+      "size": 10,
+      "speed": 34
+    }
+  },
+  {
+    "number": 15,
+    "name": "Employee Morale Insertion",
+    "cutscene": true
+  },
+  {
+    "number": 16,
+    "name": "Absolute Positivity",
+    "instructions": "Send each thing from the INBOX to the OUTBOX, BUT, if a number is negative, first remove its negative sign.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "floor": {
+      "columns": 1,
+      "rows": 3
+    },
+    "examples": [
+      {
+        "inbox": [ 2, -6, -5, 0, -3, -7, 9 ],
+        "outbox": [ 2, 6, 5, 0, 3, 7, 9 ]
+      }
+    ],
+    "challenge": {
+      "size": 8,
+      "speed": 36
+    }
+  },
+  {
+    "number": 17,
+    "name": "Exclusive Lounge",
+    "instructions": "For each TWO things in the INBOX:\n\nSend a 0 to the OUTBOX if they have the same sign. (Both positive or both negative.)\n\nSend a 1 to the OUTBOX if their signs are different. Repeat until the INBOX is empty.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "floor": {
+      "columns": 2,
+      "rows": 3,
+      "tiles": {
+        "4": 0,
+        "5": 1
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 3, 5, -2, -6, 1, -9, -8, 7 ],
+        "outbox": [ 0, 0, 1, 1 ]
+      }
+    ],
+    "challenge": {
+      "size": 12,
+      "speed": 28
+    }
+  },
+  {
+    "number": 18,
+    "name": "Sabbatical Beach Paradise",
+    "cutscene": true
+  },
+  {
+    "number": 19,
+    "name": "Countdown",
+    "instructions": "For each number in the INBOX, send that number to the OUTBOX, followed by all numbers down to (or up to) zero. It's a countdown!\n\nYou got new commands! They add ONE or subtract ONE from an item on the floor. The result is given back to you, and for your convenience, also written right back to the floor. BUMP!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2
+    },
+    "examples": [
+      {
+        "inbox": [ 8, -5, 0, 3 ],
+        "outbox": [ 8, 7, 6, 5, 4, 3, 2, 1, 0, -5, -4, -3, -2, -1, 0, 0, 3, 2, 1, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 10,
+      "speed": 82
+    }
+  },
+  {
+    "number": 20,
+    "name": "Multiplication Workshop",
+    "instructions": "For each two things in the INBOX, multiply them, and OUTBOX the result. Don't worry about negative numbers for now.\n\nYou got... LABELS! They can help you remember the purpose of each tile on the floor. Just tap any tile on the floor to edit.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2,
+      "tiles": {
+        "9": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 9, 4, 1, 7, 7, 0, 0, 8, 4, 2 ],
+        "outbox": [ 36, 7, 0, 0, 8 ]
+      }
+    ],
+    "challenge": {
+      "size": 15,
+      "speed": 109
+    }
+  },
+  {
+    "number": 21,
+    "name": "Zero Terminated Sum",
+    "instructions": "The INBOX is filled with zero terminated strings! What's that? Ask me. Your Boss.\n\nAdd together all the numbers in each string. When you reach the end of a string (marked by a ZERO), put your sum in the OUTBOX. Reset and report for each string.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 3,
+      "rows": 2,
+      "tiles": {
+        "5": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 7, 7, 0, 2, -9, 8, 0, 0, 0, 2, -9, 1, 2, -8, 1, 0 ],
+        "outbox": [ 14, 1, 0, 0, -11 ]
+      }
+    ],
+    "challenge": {
+      "size": 10,
+      "speed": 72
+    }
+  },
+  {
+    "number": 22,
+    "name": "Fibonacci Visitor",
+    "instructions": "For each thing in the INBOX, send to the OUTBOX the full Fibonacci Sequence up to, but not exceeding that value. For example, if INBOX is 10, OUTBOX should be 1 1 2 3 5 8. What's a Fibonacci Sequence? Ask your boss, or a friendly search box.\n\n1 1 2 3 5 8 13 21 34 55 89 ...",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2,
+      "tiles": {
+        "9": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 5, 20 ],
+        "outbox": [ 1, 1, 2, 3, 5, 1, 1, 2, 3, 5, 8, 13 ]
+      }
+    ],
+    "challenge": {
+      "size": 19,
+      "speed": 156
+    }
+  },
+  {
+    "number": 23,
+    "name": "The Littlest Number",
+    "instructions": "For each zero terminated string in the INBOX, send to the OUTBOX only the SMALLEST number you've seen in that string. You will never be given an empty string. Reset and repeat for each string.\n\nWhat's a \"zero terminated string\"? Go ask your boss on the previous floor!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2
+    },
+    "examples": [
+      {
+        "inbox": [ 8, 15, 2, 0, 19, 14, 8, 4, 0, 57, 47, 20, 44, 40, 0 ],
+        "outbox": [ 2, 4, 20 ]
+      }
+    ],
+    "challenge": {
+      "size": 13,
+      "speed": 75
+    }
+  },
+  {
+    "number": 24,
+    "name": "Mod Module",
+    "instructions": "For each two things in the INBOX, OUTBOX the remainder that would result if you had divided the first by the second. Don't worry, you don't actually have to divide. And don't worry about negative numbers for now.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 2,
+      "rows": 5
+    },
+    "examples": [
+      {
+        "inbox": [ 5, 2, 6, 2, 4, 6, 0, 8 ],
+        "outbox": [ 1, 0, 4, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 12,
+      "speed": 57
+    }
+  },
+  {
+    "number": 25,
+    "name": "Cumulative Countdown",
+    "instructions": "For each thing in the INBOX, OUTBOX the sum of itself plus all numbers down to zero. For example, if INBOX is 3, OUTBOX should be 6, because 3+2+1 = 6.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 3,
+      "rows": 2,
+      "tiles": {
+        "5": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 3, 3, 0, 8 ],
+        "outbox": [ 6, 6, 0, 36 ]
+      }
+    ],
+    "challenge": {
+      "size": 12,
+      "speed": 82
+    }
+  },
+  {
+    "number": 26,
+    "name": "Small Divide",
+    "instructions": "For each two things in the INBOX, how many times does the second fully fit into the first? Don't worry about negative numbers, divide by zero, or remainders.\n\nSelf improvement tip: This might be a good time to practice copying and pasting from a previous assignment!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 2,
+      "rows": 5,
+      "tiles": {
+        "9": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 9, 3, 7, 3, 3, 6, 0, 9 ],
+        "outbox": [ 3, 2, 0, 0 ]
+      }
+    ],
+    "challenge": {
+      "size": 15,
+      "speed": 76
+    }
+  },
+  {
+    "number": 27,
+    "name": "Midnight Petroleum",
+    "cutscene": true
+  },
+  {
+    "number": 28,
+    "name": "Three Sort",
+    "instructions": "For each THRREE THINGS in the INBOX, send them to the OUTBOX in order from smallest to largest.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2
+    },
+    "examples": [
+      {
+        "inbox": [ 8, 5, 2, 3, 5, 8, 6, -1, 3, 9, 6, -1 ],
+        "outbox": [ 2, 5, 8, 3, 5, 8, -1, 3, 6, -1, 6, 9 ]
+      }
+    ],
+    "challenge": {
+      "size": 34,
+      "speed": 78
+    }
+  },
+  {
+    "number": 29,
+    "name": "Storage Floor",
+    "instructions": "Imagine each thing in the INBOX is an address. And each address refers to a tile 0-9 on the floor. Your task: For each address in the INBOX, pick up the letter at that address and OUTBOX it.\n\nCongratulations! You can now access tiles on the floor INDIRECTLY! Observe this example to see how it works, compared to what you've been doing so far:",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 3,
+      "tiles": [ "N", "K", "A", "E", "R", "D", "O", "L", "Y", "J", null, null, 8 ]
+    },
+    "examples": [
+      {
+        "inbox": [ 7, 3, 3, 8, 8 ],
+        "outbox": [ "L", "E", "E", "Y", "Y" ]
+      }
+    ],
+    "challenge": {
+      "size": 5,
+      "speed": 25
+    }
+  },
+  {
+    "number": 30,
+    "name": "String Storage Floor",
+    "instructions": "Each thing in the INBOX is an address of a tile on the floor. For each address provided in the INBOX, OUTBOX the requested item from the floor and ALL FOLLOWING items on the floor until you reach a ZERO. Repeat!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 5,
+      "tiles": [ "G", "E", "T", 0, "T", "H", 0, "T", "A", "R", 0, "A", "W", "A", "K", "E", 0, "I", "S", 0, "X", "X", "X", 0 ]
+    },
+    "examples": [
+      {
+        "inbox": [ 4, 15, 7, 0, 22, 17, 11, 20, 2, 13, 4, 17, 22 ],
+        "outbox": [ "T", "H", "E", "T", "A", "R", "G", "E", "T", "X", "I", "S", "A", "W", "A", "K", "E", "X", "X", "X", "T", "A", "K", "E", "T", "H", "I", "S", "X" ]
+      }
+    ],
+    "challenge": {
+      "size": 7,
+      "speed": 203
+    }
+  },
+  {
+    "number": 31,
+    "name": "String Reverse",
+    "instructions": "For each zero terminated string in the INBOX, reverse it and put the result in the OUTBOX. Repeat!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 3,
+      "tiles": {
+        "14": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ "T", "E", "A", 0, "M", "O", "R", "E", 0, "B", "U", "G", 0 ],
+        "outbox": [ "A", "E", "T", "E", "R", "O", "M", "G", "U", "B" ]
+      }
+    ],
+    "challenge": {
+      "size": 11,
+      "speed": 122
+    }
+  },
+  {
+    "number": 32,
+    "name": "Inventory Report",
+    "instructions": "For each thing in the INBOX, send to the OUTBOX the total number of matching items on the FLOOR.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 4,
+      "tiles": [ "B", "A", "X", "B", "C", "X", "A", "B", "A", "X", "C", "B", "A", "B", 0 ]
+    },
+    "examples": [
+      {
+        "inbox": [ "X", "A", "C", "B" ],
+        "outbox": [ 3, 4, 2, 5 ]
+      }
+    ],
+    "challenge": {
+      "size": 16,
+      "speed": 393
+    }
+  },
+  {
+    "number": 33,
+    "name": "Where's Carol?",
+    "cutscene": true
+  },
+  {
+    "number": 34,
+    "name": "Vowel Incinerator",
+    "instructions": "Send everything from the INBOX to the OUTBOX, except the vowels.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 2,
+      "tiles": [ "A", "E", "I", "O", "U", 0 ]
+    },
+    "examples": [
+      {
+        "inbox": [ "C", "O", "D", "E", "U", "P", "L", "A", "K", "E" ],
+        "outbox": [ "C", "D", "P", "L", "K" ]
+      }
+    ],
+    "challenge": {
+      "size": 13,
+      "speed": 323
+    }
+  },
+  {
+    "number": 35,
+    "name": "Duplicate Removal",
+    "instructions": "Send everything from the INBOX to the OUTBOX, unless you've seen the same value before. Discard any duplicates.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 3,
+      "tiles": {
+        "14": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ "A", "C", "E", "E", "B", "C", "C", "A", "D", "E" ],
+        "outbox": [ "A", "C", "E", "B", "D" ]
+      }
+    ],
+    "challenge": {
+      "size": 17,
+      "speed": 167
+    }
+  },
+  {
+    "number": 36,
+    "name": "Alphabetizer",
+    "instructions": "The INBOX contains exactly two words. Determine which word comes first, if you were to order them alphabetically, and send only that word to the OUTBOX.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 5,
+      "tiles": {
+        "23": 0,
+        "24": 10
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ "U", "N", "I", "X", 0, "U", "N", "T", "I", "E", 0 ],
+        "outbox": [ "U", "N", "I", "X" ]
+      }
+    ],
+    "challenge": {
+      "size": 39,
+      "speed": 109
+    }
+  },
+  {
+    "number": 37,
+    "name": "Scavenger Chain",
+    "instructions": "Each pair on the floor contains:\n1. data\n2. the address of another one of the pairs\n\nA scrambled chain! Each thing in the INBOX is an address of one of the pairs. OUTBOX the data for that pair, and also the data in all the following pairs in the chain. The chain ends when you reach a negative address. Repeat until the INBOX is empty.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 5,
+      "tiles": {
+        "0": "E",
+        "1": 13,
+        "3": "C",
+        "4": 23,
+        "10": "P",
+        "11": 20,
+        "13": "S",
+        "14": 3,
+        "20": "E",
+        "21": -1,
+        "23": "A",
+        "24": 10
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 23, 0 ],
+        "outbox": [ "A", "P", "E", "E", "S", "C", "A", "P", "E" ]
+      }
+    ],
+    "challenge": {
+      "size": 8,
+      "speed": 63
+    }
+  },
+  {
+    "number": 38,
+    "name": "Digit Exploder",
+    "instructions": "Grab each number from the INBOX, and send its digits to the OUTBOX. For example, 123 becomes 1, 2, 3.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 3,
+      "rows": 4,
+      "tiles": {
+        "9": 0,
+        "10": 10,
+        "11": 100
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 705, 8, 60, 744 ],
+        "outbox": [ 7, 0, 5, 8, 6, 0, 7, 4, 4 ]
+      }
+    ],
+    "challenge": {
+      "size": 30,
+      "speed": 165
+    }
+  },
+  {
+    "number": 39,
+    "name": "Re-Coordinator",
+    "instructions": "Each number in the INBOX is an address of a tile on the floor. Send to the OUTBOX the coordinates of that tile, column first, row second.\n\nFor example, and address of 6 has coordinates 2, 1. You may ask your boss for more examples.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 4,
+      "rows": 4,
+      "tiles": {
+        "14": 0,
+        "15": 4
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 1, 5, 5, 5 ],
+        "outbox": [ 1, 0, 1, 1, 1, 1, 1, 1 ]
+      }
+    ],
+    "challenge": {
+      "size": 14,
+      "speed": 76
+    }
+  },
+  {
+    "number": 40,
+    "name": "Prime Factory",
+    "instructions": "For each thing in the INBOX, send its PRIME FACTORS to the OUTBOX in order from smallest to largest.",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 5,
+      "tiles": {
+        "24": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 13, 18, 11 ],
+        "outbox": [ 13, 2, 3, 3, 11 ]
+      }
+    ],
+    "challenge": {
+      "size": 28,
+      "speed": 399
+    }
+  },
+  {
+    "number": 41,
+    "name": "Sorting Floor",
+    "instructions": "For each zero terminated string in the INBOX, SORT the contents of the string, smallest first, biggest last, and put the results in the OUTBOX. Repeat for each string!",
+    "commands": [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+    "dereferencing": true,
+    "comments": true,
+    "labels": true,
+    "floor": {
+      "columns": 5,
+      "rows": 5,
+      "tiles": {
+        "24": 0
+      }
+    },
+    "examples": [
+      {
+        "inbox": [ 91, 21, 46, 0, "T", "H", "I", "N", "K", 0, 86, 85, 83, 37, 32, 51, 19, 62, 72, 59, 0, 66, 0 ],
+        "outbox": [ 21, 46, 91, "H", "I", "K", "N", "T", 19, 32, 37, 51, 59, 62, 72, 83, 85, 86, 66 ]
+      }
+    ],
+    "challenge": {
+      "size": 34,
+      "speed": 714
+    }
+  },
+  {
+    "number": 42,
+    "name": "End Program. Congratulations.",
+    "cutscene": true
+  }
+]
+
+},{}],15:[function(require,module,exports){
+var pick = require('./pick'),
+    levels = require('hrm-level-data');
+
+var tilesForLevel = {};
+
+levels.forEach(function (level) {
+    tilesForLevel[level.number] = level.floor && level.floor.tiles;
+});
+
+var generators = {
+    /*** Mail Room ***/
+    '1': function () {
+        return pick.exactly(3).numbersBetween(1, 9).toArray();
+    },
+    /*** Busy Mail Room ***/
+    '2': function () {
+        return pick.between(6, 15).letters().toArray();
+    },
+    /*** Copy Floor ***/
+    '3': function () {
+        return [ -99, -99, -99, -99 ];
+    },
+    /*** Scrambler Handler ***/
+    '4': function () {
+        return [].concat(
+            pick.exactly(1).pairsOf().numbersBetween(1, 10).toArray(),
+            pick.exactly(1).pairsOf().letters().toArray(),
+            pick.exactly(1).pairsOf().numbersBetween(1, 10).toArray()
+        );
+    },
+    /*** Coffee Time ***/
+    '5': null,
+    /*** Rainy Summer ***/
+    '6': function () {
+        return pick.between(3, 6).pairsOf().numbersBetween(-9, 9).toArray();
+    },
+    /*** Zero Exterminator ***/
+    '7': function () {
+        return pick.between(6, 15).letters().or().numbersBetween(-9, 9).toArray();
+    },
+    /*** Tripler Room ***/
+    '8': function () {
+        return pick.between(3, 6).numbersBetween(-9, 9).toArray();
+    },
+    /*** Zero Preservation Initiative ***/
+    '9': function () {
+        return pick.between(6, 15).letters().or().numbersBetween(-9, 9).toArray();
+    },
+    /*** Octoplier Suite ***/
+    '10': function () {
+        return pick.between(3, 6).numbersBetween(-9, 9).toArray();
+    },
+    /*** Sub Hallway ***/
+    '11': function () {
+        return pick.between(3, 6).pairsOf().numbersBetween(-9, 9).toArray();
+    },
+    /*** Tetracontiplier ***/
+    '12': function () {
+        return pick.between(3, 6).numbersBetween(-9, 9).toArray();
+    },
+    /*** Equalization Room ***/
+    '13': function () {
+        return pick.exactly(4).pairsOf().numbersBetween(-9, 9).toArray();
+    },
+    /*** Maximization Room ***/
+    '14': function () {
+        return pick.between(3, 6).pairsOf().numbersBetween(-9, 9).toArray();
+    },
+    /*** Employee Morale Insertion ***/
+    '15': null,
+    /*** Absolute Positivity ***/
+    '16': function () {
+        return pick.exactly(7).numbersBetween(-9, 9).toArray();
+    },
+    /*** Exclusive Lounge ***/
+    '17': function () {
+        return pick.exactly(4).pairsOf().nonZero().numbersBetween(-9, 9).toArray();
+    },
+    /*** Sabbatical Beach Paradise ***/
+    '18': null,
+    /*** Countdown ***/
+    '19': function () {
+        return pick.exactly(4).numbersBetween(-9, 9).toArray();
+    },
+    /*** Multiplication Workshop ***/
+    '20': function () {
+        return pick.exactly(5).pairsOf().numbersBetween(0, 9).toArray();
+    },
+    /*** Zero Terminated Sum ***/
+    '21': function () {
+        return [].concat(
+            pick.between(0, 5).nonZero().numbersBetween(-9, 9).toArray().concat(0),
+            pick.between(0, 5).nonZero().numbersBetween(-9, 9).toArray().concat(0),
+            pick.between(0, 5).nonZero().numbersBetween(-9, 9).toArray().concat(0)
+        );
+    },
+    /*** Fibonacci Visitor ***/
+    '22': function () {
+        return pick.exactly(2).numbersBetween(5, 25).toArray();
+    },
+    /*** The Littlest Number ***/
+    '23': function () {
+        return [].concat(
+            pick.between(3, 5).numbersBetween(1, 99).toArray().concat(0),
+            pick.between(3, 5).numbersBetween(1, 99).toArray().concat(0),
+            pick.between(3, 5).numbersBetween(1, 99).toArray().concat(0)
+        );
+    },
+    /*** Mod Module ***/
+    '24': function () {
+        return pick.exactly(4).pairsOf().numbersBetween(1, 9).toArray(); // @todo allow 0 in dividend
+    },
+    /*** Cumulative Countdown ***/
+    '25': function () {
+        return pick.exactly(4).numbersBetween(0, 9).toArray();
+    },
+    /*** Small Divide ***/
+    '26': function () {
+        return pick.exactly(4).pairsOf().numbersBetween(1, 9).toArray(); // @todo allow 0 in dividend
+    },
+    /*** Midnight Petroleum ***/
+    '27': null,
+    /*** Three Sort ***/
+    '28': function () {
+        return pick.exactly(4).triplesOf().numbersBetween(-9, 9).toArray();
+    },
+    /*** Storage Floor ***/
+    '29': function () {
+        return pick.between(4, 8).numbersBetween(0, 9).toArray();
+    },
+    /*** String Storage Floor ***/
+    '30': function () {
+        return [ 4, 15, 7, 0, 22, 17, 11, 20, 2, 13, 4, 17, 22 ];
+    },
+    /*** String Reverse ***/
+    '31': function () {
+        return [].concat(
+            pick.between(1, 5).letters().toArray().concat(0),
+            pick.between(1, 5).letters().toArray().concat(0),
+            pick.between(1, 5).letters().toArray().concat(0)
+        );
+    },
+    /*** Inventory Report ***/
+    '32': function (tiles) {
+        var letterMap = {};
+
+        tiles.forEach(function (tile) {
+            if (tile !== 0) {
+                letterMap[tile] = true;
+            }
+        });
+
+        return pick.exactly(4).from(function () {
+            var letters = Object.keys(letterMap),
+                letter = letters[Math.floor(Math.random() * letters.length)];
+
+            delete letterMap[letter];
+
+            return letter;
+        }).toArray();
+    },
+    /*** Where's Carol? ***/
+    '33': null,
+    /*** Vowel Incinerator ***/
+    '34': function () {
+        return pick.exactly(10).letters().toArray();
+    },
+    /*** Duplicate Removal ***/
+    '35': function () {
+        return pick.exactly(10).letters().toArray();
+    },
+    /*** Alphabetizer ***/
+    '36': function () {
+        return [].concat(
+            pick.between(3, 6).letters().toArray().concat(0),
+            pick.between(3, 6).letters().toArray().concat(0)
+        );
+    },
+    /*** Scavenger Chain ***/
+    '37': function () {
+        return [ 23, 0 ];
+    },
+    /*** Digit Exploder ***/
+    '38': function () {
+        return pick.exactly(4).numbersBetween(1, 999).toArray();
+    },
+    /*** Re-Coordinator ***/
+    '39': function () {
+        return pick.exactly(4).numbersBetween(0, 15).toArray();
+    },
+    /*** Prime Factory ***/
+    '40': function () {
+        return pick.exactly(3).numbersBetween(2, 30).toArray(); // @todo .primes().or().nonPrimes()
+    },
+    /*** Sorting Floor ***/
+    '41': function () {
+        return [].concat(
+            pick.between(1, 10).nonZero().numbersBetween(1, 10).toArray().concat(0),
+            pick.between(1, 10).letters().toArray().concat(0),
+            pick.between(1, 10).nonZero().numbersBetween(1, 10).toArray().concat(0)
+        );
+    },
+    /*** End Program. Congratulations. ***/
+    '42': null
+};
+
+exports.generate = function (levelNumber) {
+    var generator = generators[levelNumber];
+
+    if (!generator) {
+        return null;
+    }
+
+    return generator(tilesForLevel[levelNumber]);
+};
+
+},{"./pick":17,"hrm-level-data":16}],16:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"dup":14}],17:[function(require,module,exports){
+// @todo Assert state/chain transitions
+
+function randomNumberBetween(min, max, nonZero) {
+    var number;
+
+    do {
+        number = Math.floor(Math.random() * (max - min + 1)) + min;
+    } while (nonZero && number === 0);
+
+    return number;
+}
+
+function Slots(count) {
+    this._count = count;
+}
+
+Slots.prototype.toArray = function () {
+    return this._slots.slice(0);
+};
+
+Slots.prototype.pairsOf = function () {
+    this._count *= 2;
+    return this;
+};
+
+Slots.prototype.triplesOf = function () {
+    this._count *= 3;
+    return this;
+};
+
+Slots.prototype.numbersBetween = function (min, max) {
+    this._slots = this._slots || [];
+
+    for (var i = 0; i < this._count; i++) {
+        if (this._or && Math.random() > 0.5) {
+            continue;
+        }
+        this._slots[i] = randomNumberBetween(min, max, this._nonZero);
+    }
+
+    this._or = false;
+
+    return this;
+};
+
+Slots.prototype.letters = function () {
+    this._slots = this._slots || [];
+
+    var a = 'A'.charCodeAt(0),
+        z = 'Z'.charCodeAt(0);
+
+    for (var i = 0; i < this._count; i++) {
+        if (this._or && Math.random() > 0.5) {
+            continue;
+        }
+        this._slots[i] = String.fromCharCode(randomNumberBetween(a, z));
+    }
+
+    this._or = false;
+
+    return this;
+};
+
+Slots.prototype.from = function (factory) {
+    this._slots = this._slots || [];
+
+    for (var i = 0; i < this._count; i++) {
+        if (this._or && Math.random() > 0.5) {
+            continue;
+        }
+        this._slots[i] = factory();
+    }
+
+    this._or = false;
+
+    return this;
+};
+
+Slots.prototype.or = function () {
+    this._or = true;
+    return this;
+};
+
+Slots.prototype.nonZero = function () {
+    this._nonZero = true;
+    return this;
+};
+
+exports.exactly = function (count) {
+    return new Slots(count);
+};
+
+exports.between = function (min, max) {
+    return new Slots(randomNumberBetween(min, max));
+};
+
+},{}],18:[function(require,module,exports){
+var pf = require('quick-primefactors'),
+    levels = require('hrm-level-data');
+
+var tilesForLevel = {};
+
+levels.forEach(function (level) {
+    tilesForLevel[level.number] = level.floor && level.floor.tiles;
+});
+
+function splitStrings(arr) {
+    var strings = [],
+        zeroPos;
+
+    while (arr.length) {
+        zeroPos = arr.indexOf(0);
+        strings.push(arr.slice(0, zeroPos));
+        arr = arr.slice(zeroPos + 1);
+    }
+
+    return strings;
+}
+
+function splitGroups(arr, groupSize) {
+    var strings = [],
+        zeroPos;
+
+    for (var i = 0; i < arr.length; i += groupSize) {
+        strings.push(arr.slice(i, i + groupSize));
+    }
+
+    return strings;
+}
+
+var generators = {
+    /*** Mail Room ***/
+    '1': function (inbox) {
+        // Direct copy
+        return inbox.slice(0);
+    },
+    /*** Busy Mail Room ***/
+    '2': function (inbox) {
+        // Direct copy
+        return inbox.slice(0);
+    },
+    /*** Copy Floor ***/
+    '3': function () {
+        // Hard-coded
+        return [ "B", "U", "G" ];
+    },
+    /*** Scrambler Handler ***/
+    '4': function (inbox) {
+        // Output each pair with the items sorted in reverse order
+        return splitGroups(inbox, 2).reduce(function (outbox, pair) {
+            return outbox.concat(pair.sort(function (a, b) {
+                return a === b
+                    ? 0
+                    : a < b
+                        ? 1
+                        : -1;
+            }));
+        }, []);
+    },
+    /*** Coffee Time ***/
+    '5': null,
+    /*** Rainy Summer ***/
+    '6': function (inbox) {
+        // Output the sum of each pair
+        return splitGroups(inbox, 2).map(function (pair) {
+            return pair[0] + pair[1];
+        });
+    },
+    /*** Zero Exterminator ***/
+    '7': function (inbox) {
+        // Filter out zeros
+        return inbox.filter(function (item) {
+            return item !== 0;
+        });
+    },
+    /*** Tripler Room ***/
+    '8': function (inbox) {
+        // Multiply the numbers by 3
+        return inbox.map(function (item) {
+            return item * 3;
+        });
+    },
+    /*** Zero Preservation Initiative ***/
+    '9': function (inbox) {
+        // Preserve zeros
+        return inbox.filter(function (item) {
+            return item === 0;
+        });
+    },
+    /*** Octoplier Suite ***/
+    '10': function (inbox) {
+        // Multiply the numbers by 8
+        return inbox.map(function (item) {
+            return item * 8;
+        });
+    },
+    /*** Sub Hallway ***/
+    '11': function (inbox) {
+        // Output difference of each pair, both ways
+        return splitGroups(inbox, 2)
+            .map(function (pair) {
+                var diff = pair[1] - pair[0];
+
+                return [ diff, -diff ];
+            })
+            .reduce(function (outbox, diffs) {
+                return outbox.concat(diffs);
+            });
+    },
+    /*** Tetracontiplier ***/
+    '12': function (inbox) {
+        // Multiply the numbers by 40
+        return inbox.map(function (item) {
+            return item * 40;
+        });
+    },
+    /*** Equalization Room ***/
+    '13': function (inbox) {
+        // Output one of equal pairs
+        return splitGroups(inbox, 2)
+            .filter(function (pair) {
+                return pair[0] === pair[1];
+            })
+            .map(function (pair) {
+                return pair[0];
+            });
+    },
+    /*** Maximization Room ***/
+    '14': function (inbox) {
+        // Output the maximum of each pair
+        return splitGroups(inbox, 2).map(function (pair) {
+            return Math.max.apply(null, pair);
+        });
+    },
+    /*** Employee Morale Insertion ***/
+    '15': null,
+    /*** Absolute Positivity ***/
+    '16': function (inbox) {
+        // Output absolute values
+        return inbox.map(Math.abs);
+    },
+    /*** Exclusive Lounge ***/
+    '17': function (inbox) {
+        // For each pair, output 1 if the signs are the same, 0 if different
+        return splitGroups(inbox, 2).map(function (pair) {
+            return pair[0] * pair[1] < 0 ? 1 : 0;
+        });
+    },
+    /*** Sabbatical Beach Paradise ***/
+    '18': null,
+    /*** Countdown ***/
+    '19': function (inbox) {
+        return inbox.reduce(function (outbox, item) {
+            if (item >= 0) {
+                for (var i = item; i >= 0; i--) {
+                    outbox.push(i);
+                }
+            } else {
+                for (var i = item; i <= 0; i++) {
+                    outbox.push(i);
+                }
+            }
+
+            return outbox;
+        }, []);
+    },
+    /*** Multiplication Workshop ***/
+    '20': function (inbox) {
+        // For each pair, output their product
+        return splitGroups(inbox, 2).map(function (pair) {
+            return pair[0] * pair[1];
+        });
+    },
+    /*** Zero Terminated Sum ***/
+    '21': function (inbox) {
+        return splitStrings(inbox)
+            .map(function (string) {
+                return string.reduce(function (sum, item) {
+                    return sum + item;
+                }, 0);
+            });
+    },
+    /*** Fibonacci Visitor ***/
+    '22': function (inbox) {
+        return inbox.reduce(function (outbox, item) {
+            var i = 1,
+                j = 1,
+                tmp;
+
+            do {
+                outbox.push(i);
+                tmp = j;
+                j += i;
+                i = tmp;
+            } while (i <= item);
+
+            return outbox;
+        }, []);
+    },
+    /*** The Littlest Number ***/
+    '23': function (inbox) {
+        return splitStrings(inbox).map(function (string) {
+            return Math.min.apply(null, string);
+        });
+    },
+    /*** Mod Module ***/
+    '24': function (inbox) {
+        // For each pair, output the modulus
+        return splitGroups(inbox, 2).map(function (pair) {
+            return pair[0] % pair[1];
+        });
+    },
+    /*** Cumulative Countdown ***/
+    '25': function (inbox) {
+        // Sum of all numbers up to and including item
+        return inbox.map(function (item) {
+            return item * (item + 1) / 2;
+        });
+    },
+    /*** Small Divide ***/
+    '26': function (inbox) {
+        // For each pair, output the quotient
+        return splitGroups(inbox, 2).map(function (pair) {
+            return Math.floor(pair[0] / pair[1]);
+        });
+    },
+    /*** Midnight Petroleum ***/
+    '27': null,
+    /*** Three Sort ***/
+    '28': function (inbox) {
+        // For each triple, sort then output
+        return splitGroups(inbox, 3).reduce(function (outbox, triplet) {
+            return outbox.concat(triplet.sort());
+        }, []);
+    },
+    /*** Storage Floor ***/
+    '29': function (inbox, tiles) {
+        // Lookup floor tiles
+        return inbox.map(function (item) {
+            return tiles[item];
+        });
+    },
+    /*** String Storage Floor ***/
+    '30': function (inbox, tiles) {
+        // Output strings from the floor
+        return inbox.reduce(function (outbox, item) {
+            do {
+                outbox.push(tiles[item]);
+            } while (tiles[++item]);
+
+            return outbox;
+        }, []);
+    },
+    /*** String Reverse ***/
+    '31': function (inbox) {
+        // Reverse strings and output
+        return splitStrings(inbox).reduce(function (outbox, string) {
+            return outbox.concat(string.reverse());
+        }, []);
+    },
+    /*** Inventory Report ***/
+    '32': function (inbox, tiles) {
+        // Count occurence of item in tiles
+        return inbox.map(function (item) {
+            return tiles.filter(function (tile) {
+                return tile === item;
+            }).length;
+        });
+    },
+    /*** Where's Carol? ***/
+    '33': null,
+    /*** Vowel Incinerator ***/
+    '34': function (inbox, tiles) {
+        // Drop the vowels
+        return inbox.filter(function (item) {
+            return tiles.indexOf(item) === -1;
+        });
+    },
+    /*** Duplicate Removal ***/
+    '35': function (inbox) {
+        var seen = {};
+
+        // Drop duplicates
+        return inbox.filter(function (item) {
+            if (seen[item]) {
+                return false;
+            } else {
+                seen[item] = true;
+                return true;
+            }
+        });
+    },
+    /*** Alphabetizer ***/
+    '36': function (inbox) {
+        // Output the smaller of two strings
+        return splitStrings(inbox).slice(0, 2).reduce(function (first, second) {
+            var firstSmallerOrEqual = true;
+
+            first.some(function (item, idx) {
+                if (idx === second.length || item > second[idx]) {
+                    firstSmallerOrEqual = false;
+                    return true;
+                } else if (item < second[idx]) {
+                    return true;
+                }
+            });
+
+            return firstSmallerOrEqual ? first : second;
+        });
+    },
+    /*** Scavenger Chain ***/
+    '37': function (inbox, tiles) {
+        // Follow address chains and output letters
+        return inbox.reduce(function (outbox, item) {
+            while (item !== -1) {
+                outbox.push(tiles[item]);
+                item = tiles[item + 1];
+            }
+
+            return outbox;
+        }, []);
+    },
+    /*** Digit Exploder ***/
+    '38': function (inbox) {
+        // Output digits of each number
+        return inbox.reduce(function (outbox, item) {
+            return outbox.concat(item.toString().split(''));
+        }, []);
+    },
+    /*** Re-Coordinator ***/
+    '39': function (inbox) {
+        // Output coordinates of each tile
+        return inbox.reduce(function (outbox, item) {
+            return outbox.concat(item % 4, Math.floor(item / 4));
+        }, []);
+    },
+    /*** Prime Factory ***/
+    '40': function (inbox) {
+        // Output prime factors smallest to largest of each number
+        return inbox.reduce(function (outbox, item) {
+            return outbox.concat(pf(item));
+        }, []);
+    },
+    /*** Sorting Floor ***/
+    '41': function (inbox) {
+        // Split strings, sort items in each string, then output all strings
+        return splitStrings(inbox)
+            .map(function (string) {
+                return string.sort();
+            })
+            .reduce(function (output, string) {
+                return output.concat(string);
+            });
+    },
+    /*** End Program. Congratulations. ***/
+    '42': null
+};
+
+exports.generate = function (levelNumber, inbox) {
+    var generator = generators[levelNumber];
+
+    if (!generator) {
+        return null;
+    }
+
+    return generator(inbox, tilesForLevel[levelNumber]);
+};
+
+},{"hrm-level-data":19,"quick-primefactors":20}],19:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"dup":14}],20:[function(require,module,exports){
+'use strict';
+
+var sieve = {list: [], set: {}, limit: 0};
+
+function updateSieve(newLimit) {
+  sieve.list = require('sieve-of-eratosthenes')(newLimit + 1);
+  sieve.set = require('lodash.indexby')(sieve.list);
+  sieve.limit = newLimit;
+}
+
+function findFactors(number, factors) {
+  if (sieve.set[number]) {
+    factors.push(number);
+    return factors;
+  }
+
+  var factor = require('lodash.find')(sieve.list, function (prime) {
+    return number % prime === 0;
+  });
+
+  factors.push(factor);
+
+  return findFactors(number / factor, factors);
+}
+
+module.exports = function (number) {
+  if (!number || number === 1) {
+    return [];
+  }
+
+  if (number > sieve.limit) {
+    updateSieve(number);
+  }
+
+  return findFactors(number, []);
+};
+
+},{"lodash.find":21,"lodash.indexby":34,"sieve-of-eratosthenes":47}],21:[function(require,module,exports){
+/**
+ * lodash 3.2.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var baseCallback = require('lodash._basecallback'),
+    baseEach = require('lodash._baseeach'),
+    baseFind = require('lodash._basefind'),
+    baseFindIndex = require('lodash._basefindindex'),
+    isArray = require('lodash.isarray');
+
+/**
+ * Creates a `_.find` or `_.findLast` function.
+ *
+ * @private
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new find function.
+ */
+function createFind(eachFunc, fromRight) {
+  return function(collection, predicate, thisArg) {
+    predicate = baseCallback(predicate, thisArg, 3);
+    if (isArray(collection)) {
+      var index = baseFindIndex(collection, predicate, fromRight);
+      return index > -1 ? collection[index] : undefined;
+    }
+    return baseFind(collection, predicate, eachFunc);
+  };
+}
+
+/**
+ * Iterates over elements of `collection`, returning the first element
+ * `predicate` returns truthy for. The predicate is bound to `thisArg` and
+ * invoked with three arguments: (value, index|key, collection).
+ *
+ * If a property name is provided for `predicate` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `predicate` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @alias detect
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to search.
+ * @param {Function|Object|string} [predicate=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `predicate`.
+ * @returns {*} Returns the matched element, else `undefined`.
+ * @example
+ *
+ * var users = [
+ *   { 'user': 'barney',  'age': 36, 'active': true },
+ *   { 'user': 'fred',    'age': 40, 'active': false },
+ *   { 'user': 'pebbles', 'age': 1,  'active': true }
+ * ];
+ *
+ * _.result(_.find(users, function(chr) {
+ *   return chr.age < 40;
+ * }), 'user');
+ * // => 'barney'
+ *
+ * // using the `_.matches` callback shorthand
+ * _.result(_.find(users, { 'age': 1, 'active': true }), 'user');
+ * // => 'pebbles'
+ *
+ * // using the `_.matchesProperty` callback shorthand
+ * _.result(_.find(users, 'active', false), 'user');
+ * // => 'fred'
+ *
+ * // using the `_.property` callback shorthand
+ * _.result(_.find(users, 'active'), 'user');
+ * // => 'barney'
+ */
+var find = createFind(baseEach);
+
+module.exports = find;
+
+},{"lodash._basecallback":22,"lodash._baseeach":27,"lodash._basefind":28,"lodash._basefindindex":29,"lodash.isarray":30}],22:[function(require,module,exports){
+/**
+ * lodash 3.3.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var baseIsEqual = require('lodash._baseisequal'),
+    bindCallback = require('lodash._bindcallback'),
+    isArray = require('lodash.isarray'),
+    pairs = require('lodash.pairs');
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/,
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
+
+/** Used to match backslashes in property paths. */
+var reEscapeChar = /\\(\\)?/g;
+
+/**
+ * Converts `value` to a string if it's not one. An empty string is returned
+ * for `null` or `undefined` values.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {string} Returns the string.
+ */
+function baseToString(value) {
+  return value == null ? '' : (value + '');
+}
+
+/**
+ * The base implementation of `_.callback` which supports specifying the
+ * number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {*} [func=_.identity] The value to convert to a callback.
+ * @param {*} [thisArg] The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function baseCallback(func, thisArg, argCount) {
+  var type = typeof func;
+  if (type == 'function') {
+    return thisArg === undefined
+      ? func
+      : bindCallback(func, thisArg, argCount);
+  }
+  if (func == null) {
+    return identity;
+  }
+  if (type == 'object') {
+    return baseMatches(func);
+  }
+  return thisArg === undefined
+    ? property(func)
+    : baseMatchesProperty(func, thisArg);
+}
+
+/**
+ * The base implementation of `get` without support for string paths
+ * and default values.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {Array} path The path of the property to get.
+ * @param {string} [pathKey] The key representation of path.
+ * @returns {*} Returns the resolved value.
+ */
+function baseGet(object, path, pathKey) {
+  if (object == null) {
+    return;
+  }
+  if (pathKey !== undefined && pathKey in toObject(object)) {
+    path = [pathKey];
+  }
+  var index = 0,
+      length = path.length;
+
+  while (object != null && index < length) {
+    object = object[path[index++]];
+  }
+  return (index && index == length) ? object : undefined;
+}
+
+/**
+ * The base implementation of `_.isMatch` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to inspect.
+ * @param {Array} matchData The propery names, values, and compare flags to match.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @returns {boolean} Returns `true` if `object` is a match, else `false`.
+ */
+function baseIsMatch(object, matchData, customizer) {
+  var index = matchData.length,
+      length = index,
+      noCustomizer = !customizer;
+
+  if (object == null) {
+    return !length;
+  }
+  object = toObject(object);
+  while (index--) {
+    var data = matchData[index];
+    if ((noCustomizer && data[2])
+          ? data[1] !== object[data[0]]
+          : !(data[0] in object)
+        ) {
+      return false;
+    }
+  }
+  while (++index < length) {
+    data = matchData[index];
+    var key = data[0],
+        objValue = object[key],
+        srcValue = data[1];
+
+    if (noCustomizer && data[2]) {
+      if (objValue === undefined && !(key in object)) {
+        return false;
+      }
+    } else {
+      var result = customizer ? customizer(objValue, srcValue, key) : undefined;
+      if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, true) : result)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * The base implementation of `_.matches` which does not clone `source`.
+ *
+ * @private
+ * @param {Object} source The object of property values to match.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatches(source) {
+  var matchData = getMatchData(source);
+  if (matchData.length == 1 && matchData[0][2]) {
+    var key = matchData[0][0],
+        value = matchData[0][1];
+
+    return function(object) {
+      if (object == null) {
+        return false;
+      }
+      return object[key] === value && (value !== undefined || (key in toObject(object)));
+    };
+  }
+  return function(object) {
+    return baseIsMatch(object, matchData);
+  };
+}
+
+/**
+ * The base implementation of `_.matchesProperty` which does not clone `srcValue`.
+ *
+ * @private
+ * @param {string} path The path of the property to get.
+ * @param {*} srcValue The value to compare.
+ * @returns {Function} Returns the new function.
+ */
+function baseMatchesProperty(path, srcValue) {
+  var isArr = isArray(path),
+      isCommon = isKey(path) && isStrictComparable(srcValue),
+      pathKey = (path + '');
+
+  path = toPath(path);
+  return function(object) {
+    if (object == null) {
+      return false;
+    }
+    var key = pathKey;
+    object = toObject(object);
+    if ((isArr || !isCommon) && !(key in object)) {
+      object = path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+      if (object == null) {
+        return false;
+      }
+      key = last(path);
+      object = toObject(object);
+    }
+    return object[key] === srcValue
+      ? (srcValue !== undefined || (key in object))
+      : baseIsEqual(srcValue, object[key], undefined, true);
+  };
+}
+
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+/**
+ * A specialized version of `baseProperty` which supports deep paths.
+ *
+ * @private
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function basePropertyDeep(path) {
+  var pathKey = (path + '');
+  path = toPath(path);
+  return function(object) {
+    return baseGet(object, path, pathKey);
+  };
+}
+
+/**
+ * The base implementation of `_.slice` without an iteratee call guard.
+ *
+ * @private
+ * @param {Array} array The array to slice.
+ * @param {number} [start=0] The start position.
+ * @param {number} [end=array.length] The end position.
+ * @returns {Array} Returns the slice of `array`.
+ */
+function baseSlice(array, start, end) {
+  var index = -1,
+      length = array.length;
+
+  start = start == null ? 0 : (+start || 0);
+  if (start < 0) {
+    start = -start > length ? 0 : (length + start);
+  }
+  end = (end === undefined || end > length) ? length : (+end || 0);
+  if (end < 0) {
+    end += length;
+  }
+  length = start > end ? 0 : ((end - start) >>> 0);
+  start >>>= 0;
+
+  var result = Array(length);
+  while (++index < length) {
+    result[index] = array[index + start];
+  }
+  return result;
+}
+
+/**
+ * Gets the propery names, values, and compare flags of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the match data of `object`.
+ */
+function getMatchData(object) {
+  var result = pairs(object),
+      length = result.length;
+
+  while (length--) {
+    result[length][2] = isStrictComparable(result[length][1]);
+  }
+  return result;
+}
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  var type = typeof value;
+  if ((type == 'string' && reIsPlainProp.test(value)) || type == 'number') {
+    return true;
+  }
+  if (isArray(value)) {
+    return false;
+  }
+  var result = !reIsDeepProp.test(value);
+  return result || (object != null && value in toObject(object));
+}
+
+/**
+ * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` if suitable for strict
+ *  equality comparisons, else `false`.
+ */
+function isStrictComparable(value) {
+  return value === value && !isObject(value);
+}
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+/**
+ * Converts `value` to property path array if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Array} Returns the property path array.
+ */
+function toPath(value) {
+  if (isArray(value)) {
+    return value;
+  }
+  var result = [];
+  baseToString(value).replace(rePropName, function(match, number, quote, string) {
+    result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
+  });
+  return result;
+}
+
+/**
+ * Gets the last element of `array`.
+ *
+ * @static
+ * @memberOf _
+ * @category Array
+ * @param {Array} array The array to query.
+ * @returns {*} Returns the last element of `array`.
+ * @example
+ *
+ * _.last([1, 2, 3]);
+ * // => 3
+ */
+function last(array) {
+  var length = array ? array.length : 0;
+  return length ? array[length - 1] : undefined;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * This method returns the first argument provided to it.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'user': 'fred' };
+ *
+ * _.identity(object) === object;
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+/**
+ * Creates a function that returns the property value at `path` on a
+ * given object.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {Array|string} path The path of the property to get.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var objects = [
+ *   { 'a': { 'b': { 'c': 2 } } },
+ *   { 'a': { 'b': { 'c': 1 } } }
+ * ];
+ *
+ * _.map(objects, _.property('a.b.c'));
+ * // => [2, 1]
+ *
+ * _.pluck(_.sortBy(objects, _.property(['a', 'b', 'c'])), 'a.b.c');
+ * // => [1, 2]
+ */
+function property(path) {
+  return isKey(path) ? baseProperty(path) : basePropertyDeep(path);
+}
+
+module.exports = baseCallback;
+
+},{"lodash._baseisequal":23,"lodash._bindcallback":25,"lodash.isarray":30,"lodash.pairs":26}],23:[function(require,module,exports){
+/**
+ * lodash 3.0.7 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var isArray = require('lodash.isarray'),
+    isTypedArray = require('lodash.istypedarray'),
+    keys = require('lodash.keys');
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    numberTag = '[object Number]',
+    objectTag = '[object Object]',
+    regexpTag = '[object RegExp]',
+    stringTag = '[object String]';
+
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * A specialized version of `_.some` for arrays without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to iterate over.
+ * @param {Function} predicate The function invoked per iteration.
+ * @returns {boolean} Returns `true` if any element passes the predicate check,
+ *  else `false`.
+ */
+function arraySome(array, predicate) {
+  var index = -1,
+      length = array.length;
+
+  while (++index < length) {
+    if (predicate(array[index], index, array)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * The base implementation of `_.isEqual` without support for `this` binding
+ * `customizer` functions.
+ *
+ * @private
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ */
+function baseIsEqual(value, other, customizer, isLoose, stackA, stackB) {
+  if (value === other) {
+    return true;
+  }
+  if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
+    return value !== value && other !== other;
+  }
+  return baseIsEqualDeep(value, other, baseIsEqual, customizer, isLoose, stackA, stackB);
+}
+
+/**
+ * A specialized version of `baseIsEqual` for arrays and objects which performs
+ * deep comparisons and tracks traversed objects enabling objects with circular
+ * references to be compared.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing objects.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA=[]] Tracks traversed `value` objects.
+ * @param {Array} [stackB=[]] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function baseIsEqualDeep(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objIsArr = isArray(object),
+      othIsArr = isArray(other),
+      objTag = arrayTag,
+      othTag = arrayTag;
+
+  if (!objIsArr) {
+    objTag = objToString.call(object);
+    if (objTag == argsTag) {
+      objTag = objectTag;
+    } else if (objTag != objectTag) {
+      objIsArr = isTypedArray(object);
+    }
+  }
+  if (!othIsArr) {
+    othTag = objToString.call(other);
+    if (othTag == argsTag) {
+      othTag = objectTag;
+    } else if (othTag != objectTag) {
+      othIsArr = isTypedArray(other);
+    }
+  }
+  var objIsObj = objTag == objectTag,
+      othIsObj = othTag == objectTag,
+      isSameTag = objTag == othTag;
+
+  if (isSameTag && !(objIsArr || objIsObj)) {
+    return equalByTag(object, other, objTag);
+  }
+  if (!isLoose) {
+    var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+        othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+    if (objIsWrapped || othIsWrapped) {
+      return equalFunc(objIsWrapped ? object.value() : object, othIsWrapped ? other.value() : other, customizer, isLoose, stackA, stackB);
+    }
+  }
+  if (!isSameTag) {
+    return false;
+  }
+  // Assume cyclic values are equal.
+  // For more information on detecting circular references see https://es5.github.io/#JO.
+  stackA || (stackA = []);
+  stackB || (stackB = []);
+
+  var length = stackA.length;
+  while (length--) {
+    if (stackA[length] == object) {
+      return stackB[length] == other;
+    }
+  }
+  // Add `object` and `other` to the stack of traversed objects.
+  stackA.push(object);
+  stackB.push(other);
+
+  var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, customizer, isLoose, stackA, stackB);
+
+  stackA.pop();
+  stackB.pop();
+
+  return result;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for arrays with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Array} array The array to compare.
+ * @param {Array} other The other array to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing arrays.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+ */
+function equalArrays(array, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var index = -1,
+      arrLength = array.length,
+      othLength = other.length;
+
+  if (arrLength != othLength && !(isLoose && othLength > arrLength)) {
+    return false;
+  }
+  // Ignore non-index properties.
+  while (++index < arrLength) {
+    var arrValue = array[index],
+        othValue = other[index],
+        result = customizer ? customizer(isLoose ? othValue : arrValue, isLoose ? arrValue : othValue, index) : undefined;
+
+    if (result !== undefined) {
+      if (result) {
+        continue;
+      }
+      return false;
+    }
+    // Recursively compare arrays (susceptible to call stack limits).
+    if (isLoose) {
+      if (!arraySome(other, function(othValue) {
+            return arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB);
+          })) {
+        return false;
+      }
+    } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, isLoose, stackA, stackB))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for comparing objects of
+ * the same `toStringTag`.
+ *
+ * **Note:** This function only supports comparing values with tags of
+ * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+ *
+ * @private
+ * @param {Object} value The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {string} tag The `toStringTag` of the objects to compare.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalByTag(object, other, tag) {
+  switch (tag) {
+    case boolTag:
+    case dateTag:
+      // Coerce dates and booleans to numbers, dates to milliseconds and booleans
+      // to `1` or `0` treating invalid dates coerced to `NaN` as not equal.
+      return +object == +other;
+
+    case errorTag:
+      return object.name == other.name && object.message == other.message;
+
+    case numberTag:
+      // Treat `NaN` vs. `NaN` as equal.
+      return (object != +object)
+        ? other != +other
+        : object == +other;
+
+    case regexpTag:
+    case stringTag:
+      // Coerce regexes to strings and treat strings primitives and string
+      // objects as equal. See https://es5.github.io/#x15.10.6.4 for more details.
+      return object == (other + '');
+  }
+  return false;
+}
+
+/**
+ * A specialized version of `baseIsEqualDeep` for objects with support for
+ * partial deep comparisons.
+ *
+ * @private
+ * @param {Object} object The object to compare.
+ * @param {Object} other The other object to compare.
+ * @param {Function} equalFunc The function to determine equivalents of values.
+ * @param {Function} [customizer] The function to customize comparing values.
+ * @param {boolean} [isLoose] Specify performing partial comparisons.
+ * @param {Array} [stackA] Tracks traversed `value` objects.
+ * @param {Array} [stackB] Tracks traversed `other` objects.
+ * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+ */
+function equalObjects(object, other, equalFunc, customizer, isLoose, stackA, stackB) {
+  var objProps = keys(object),
+      objLength = objProps.length,
+      othProps = keys(other),
+      othLength = othProps.length;
+
+  if (objLength != othLength && !isLoose) {
+    return false;
+  }
+  var index = objLength;
+  while (index--) {
+    var key = objProps[index];
+    if (!(isLoose ? key in other : hasOwnProperty.call(other, key))) {
+      return false;
+    }
+  }
+  var skipCtor = isLoose;
+  while (++index < objLength) {
+    key = objProps[index];
+    var objValue = object[key],
+        othValue = other[key],
+        result = customizer ? customizer(isLoose ? othValue : objValue, isLoose? objValue : othValue, key) : undefined;
+
+    // Recursively compare objects (susceptible to call stack limits).
+    if (!(result === undefined ? equalFunc(objValue, othValue, customizer, isLoose, stackA, stackB) : result)) {
+      return false;
+    }
+    skipCtor || (skipCtor = key == 'constructor');
+  }
+  if (!skipCtor) {
+    var objCtor = object.constructor,
+        othCtor = other.constructor;
+
+    // Non `Object` object instances with different constructors are not equal.
+    if (objCtor != othCtor &&
+        ('constructor' in object && 'constructor' in other) &&
+        !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+          typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+module.exports = baseIsEqual;
+
+},{"lodash.isarray":30,"lodash.istypedarray":24,"lodash.keys":31}],24:[function(require,module,exports){
+/**
+ * lodash 3.0.2 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    arrayTag = '[object Array]',
+    boolTag = '[object Boolean]',
+    dateTag = '[object Date]',
+    errorTag = '[object Error]',
+    funcTag = '[object Function]',
+    mapTag = '[object Map]',
+    numberTag = '[object Number]',
+    objectTag = '[object Object]',
+    regexpTag = '[object RegExp]',
+    setTag = '[object Set]',
+    stringTag = '[object String]',
+    weakMapTag = '[object WeakMap]';
+
+var arrayBufferTag = '[object ArrayBuffer]',
+    float32Tag = '[object Float32Array]',
+    float64Tag = '[object Float64Array]',
+    int8Tag = '[object Int8Array]',
+    int16Tag = '[object Int16Array]',
+    int32Tag = '[object Int32Array]',
+    uint8Tag = '[object Uint8Array]',
+    uint8ClampedTag = '[object Uint8ClampedArray]',
+    uint16Tag = '[object Uint16Array]',
+    uint32Tag = '[object Uint32Array]';
+
+/** Used to identify `toStringTag` values of typed arrays. */
+var typedArrayTags = {};
+typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+typedArrayTags[uint32Tag] = true;
+typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+typedArrayTags[dateTag] = typedArrayTags[errorTag] =
+typedArrayTags[funcTag] = typedArrayTags[mapTag] =
+typedArrayTags[numberTag] = typedArrayTags[objectTag] =
+typedArrayTags[regexpTag] = typedArrayTags[setTag] =
+typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/**
+ * Used as the [maximum length](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Checks if `value` is classified as a typed array.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isTypedArray(new Uint8Array);
+ * // => true
+ *
+ * _.isTypedArray([]);
+ * // => false
+ */
+function isTypedArray(value) {
+  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
+}
+
+module.exports = isTypedArray;
+
+},{}],25:[function(require,module,exports){
+/**
+ * lodash 3.0.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/**
+ * A specialized version of `baseCallback` which only supports `this` binding
+ * and specifying the number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {Function} func The function to bind.
+ * @param {*} thisArg The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function bindCallback(func, thisArg, argCount) {
+  if (typeof func != 'function') {
+    return identity;
+  }
+  if (thisArg === undefined) {
+    return func;
+  }
+  switch (argCount) {
+    case 1: return function(value) {
+      return func.call(thisArg, value);
+    };
+    case 3: return function(value, index, collection) {
+      return func.call(thisArg, value, index, collection);
+    };
+    case 4: return function(accumulator, value, index, collection) {
+      return func.call(thisArg, accumulator, value, index, collection);
+    };
+    case 5: return function(value, other, key, object, source) {
+      return func.call(thisArg, value, other, key, object, source);
+    };
+  }
+  return function() {
+    return func.apply(thisArg, arguments);
+  };
+}
+
+/**
+ * This method returns the first argument provided to it.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'user': 'fred' };
+ *
+ * _.identity(object) === object;
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+module.exports = bindCallback;
+
+},{}],26:[function(require,module,exports){
+/**
+ * lodash 3.0.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var keys = require('lodash.keys');
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Creates a two dimensional array of the key-value pairs for `object`,
+ * e.g. `[[key1, value1], [key2, value2]]`.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the new array of key-value pairs.
+ * @example
+ *
+ * _.pairs({ 'barney': 36, 'fred': 40 });
+ * // => [['barney', 36], ['fred', 40]] (iteration order is not guaranteed)
+ */
+function pairs(object) {
+  object = toObject(object);
+
+  var index = -1,
+      props = keys(object),
+      length = props.length,
+      result = Array(length);
+
+  while (++index < length) {
+    var key = props[index];
+    result[index] = [key, object[key]];
+  }
+  return result;
+}
+
+module.exports = pairs;
+
+},{"lodash.keys":31}],27:[function(require,module,exports){
+/**
+ * lodash 3.0.4 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var keys = require('lodash.keys');
+
+/**
+ * Used as the [maximum length](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * The base implementation of `_.forEach` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array|Object|string} Returns `collection`.
+ */
+var baseEach = createBaseEach(baseForOwn);
+
+/**
+ * The base implementation of `baseForIn` and `baseForOwn` which iterates
+ * over `object` properties returned by `keysFunc` invoking `iteratee` for
+ * each property. Iteratee functions may exit iteration early by explicitly
+ * returning `false`.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @param {Function} keysFunc The function to get the keys of `object`.
+ * @returns {Object} Returns `object`.
+ */
+var baseFor = createBaseFor();
+
+/**
+ * The base implementation of `_.forOwn` without support for callback
+ * shorthands and `this` binding.
+ *
+ * @private
+ * @param {Object} object The object to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Object} Returns `object`.
+ */
+function baseForOwn(object, iteratee) {
+  return baseFor(object, iteratee, keys);
+}
+
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+/**
+ * Creates a `baseEach` or `baseEachRight` function.
+ *
+ * @private
+ * @param {Function} eachFunc The function to iterate over a collection.
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseEach(eachFunc, fromRight) {
+  return function(collection, iteratee) {
+    var length = collection ? getLength(collection) : 0;
+    if (!isLength(length)) {
+      return eachFunc(collection, iteratee);
+    }
+    var index = fromRight ? length : -1,
+        iterable = toObject(collection);
+
+    while ((fromRight ? index-- : ++index < length)) {
+      if (iteratee(iterable[index], index, iterable) === false) {
+        break;
+      }
+    }
+    return collection;
+  };
+}
+
+/**
+ * Creates a base function for `_.forIn` or `_.forInRight`.
+ *
+ * @private
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {Function} Returns the new base function.
+ */
+function createBaseFor(fromRight) {
+  return function(object, iteratee, keysFunc) {
+    var iterable = toObject(object),
+        props = keysFunc(object),
+        length = props.length,
+        index = fromRight ? length : -1;
+
+    while ((fromRight ? index-- : ++index < length)) {
+      var key = props[index];
+      if (iteratee(iterable[key], key, iterable) === false) {
+        break;
+      }
+    }
+    return object;
+  };
+}
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Converts `value` to an object if it's not one.
+ *
+ * @private
+ * @param {*} value The value to process.
+ * @returns {Object} Returns the object.
+ */
+function toObject(value) {
+  return isObject(value) ? value : Object(value);
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+module.exports = baseEach;
+
+},{"lodash.keys":31}],28:[function(require,module,exports){
+/**
+ * lodash 3.0.0 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.7.0 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/**
+ * The base implementation of `_.find`, `_.findLast`, `_.findKey`, and `_.findLastKey`,
+ * without support for callback shorthands and `this` binding, which iterates
+ * over `collection` using the provided `eachFunc`.
+ *
+ * @private
+ * @param {Array|Object|string} collection The collection to search.
+ * @param {Function} predicate The function invoked per iteration.
+ * @param {Function} eachFunc The function to iterate over `collection`.
+ * @param {boolean} [retKey] Specify returning the key of the found element
+ *  instead of the element itself.
+ * @returns {*} Returns the found element or its key, else `undefined`.
+ */
+function baseFind(collection, predicate, eachFunc, retKey) {
+  var result;
+  eachFunc(collection, function(value, key, collection) {
+    if (predicate(value, key, collection)) {
+      result = retKey ? key : value;
+      return false;
+    }
+  });
+  return result;
+}
+
+module.exports = baseFind;
+
+},{}],29:[function(require,module,exports){
+/**
+ * lodash 3.6.0 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.2 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/**
+ * The base implementation of `_.findIndex` and `_.findLastIndex` without
+ * support for callback shorthands and `this` binding.
+ *
+ * @private
+ * @param {Array} array The array to search.
+ * @param {Function} predicate The function invoked per iteration.
+ * @param {boolean} [fromRight] Specify iterating from right to left.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */
+function baseFindIndex(array, predicate, fromRight) {
+  var length = array.length,
+      index = fromRight ? length : -1;
+
+  while ((fromRight ? index-- : ++index < length)) {
+    if (predicate(array[index], index, array)) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+module.exports = baseFindIndex;
+
+},{}],30:[function(require,module,exports){
+/**
+ * lodash 3.0.4 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/** `Object#toString` result references. */
+var arrayTag = '[object Array]',
+    funcTag = '[object Function]';
+
+/** Used to detect host constructors (Safari > 5). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var fnToString = Function.prototype.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeIsArray = getNative(Array, 'isArray');
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = object == null ? undefined : object[key];
+  return isNative(value) ? value : undefined;
+}
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(function() { return arguments; }());
+ * // => false
+ */
+var isArray = nativeIsArray || function(value) {
+  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
+};
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in older versions of Chrome and Safari which return 'function' for regexes
+  // and Safari 8 equivalents which return 'object' for typed array constructors.
+  return isObject(value) && objToString.call(value) == funcTag;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is a native function.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
+ * @example
+ *
+ * _.isNative(Array.prototype.push);
+ * // => true
+ *
+ * _.isNative(_);
+ * // => false
+ */
+function isNative(value) {
+  if (value == null) {
+    return false;
+  }
+  if (isFunction(value)) {
+    return reIsNative.test(fnToString.call(value));
+  }
+  return isObjectLike(value) && reIsHostCtor.test(value);
+}
+
+module.exports = isArray;
+
+},{}],31:[function(require,module,exports){
+/**
+ * lodash 3.1.2 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var getNative = require('lodash._getnative'),
+    isArguments = require('lodash.isarguments'),
+    isArray = require('lodash.isarray');
+
+/** Used to detect unsigned integer values. */
+var reIsUint = /^\d+$/;
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeKeys = getNative(Object, 'keys');
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+/**
+ * Checks if `value` is array-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ */
+function isArrayLike(value) {
+  return value != null && isLength(getLength(value));
+}
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+  return value > -1 && value % 1 == 0 && value < length;
+}
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * A fallback implementation of `Object.keys` which creates an array of the
+ * own enumerable property names of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function shimKeys(object) {
+  var props = keysIn(object),
+      propsLength = props.length,
+      length = propsLength && object.length;
+
+  var allowIndexes = !!length && isLength(length) &&
+    (isArray(object) || isArguments(object));
+
+  var index = -1,
+      result = [];
+
+  while (++index < propsLength) {
+    var key = props[index];
+    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+var keys = !nativeKeys ? shimKeys : function(object) {
+  var Ctor = object == null ? undefined : object.constructor;
+  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+      (typeof object != 'function' && isArrayLike(object))) {
+    return shimKeys(object);
+  }
+  return isObject(object) ? nativeKeys(object) : [];
+};
+
+/**
+ * Creates an array of the own and inherited enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keysIn(new Foo);
+ * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+ */
+function keysIn(object) {
+  if (object == null) {
+    return [];
+  }
+  if (!isObject(object)) {
+    object = Object(object);
+  }
+  var length = object.length;
+  length = (length && isLength(length) &&
+    (isArray(object) || isArguments(object)) && length) || 0;
+
+  var Ctor = object.constructor,
+      index = -1,
+      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      result = Array(length),
+      skipIndexes = length > 0;
+
+  while (++index < length) {
+    result[index] = (index + '');
+  }
+  for (var key in object) {
+    if (!(skipIndexes && isIndex(key, length)) &&
+        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = keys;
+
+},{"lodash._getnative":32,"lodash.isarguments":33,"lodash.isarray":30}],32:[function(require,module,exports){
+/**
+ * lodash 3.9.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/** `Object#toString` result references. */
+var funcTag = '[object Function]';
+
+/** Used to detect host constructors (Safari > 5). */
+var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var fnToString = Function.prototype.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objToString = objectProto.toString;
+
+/** Used to detect if a method is native. */
+var reIsNative = RegExp('^' +
+  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+);
+
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */
+function getNative(object, key) {
+  var value = object == null ? undefined : object[key];
+  return isNative(value) ? value : undefined;
+}
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in older versions of Chrome and Safari which return 'function' for regexes
+  // and Safari 8 equivalents which return 'object' for typed array constructors.
+  return isObject(value) && objToString.call(value) == funcTag;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(1);
+ * // => false
+ */
+function isObject(value) {
+  // Avoid a V8 JIT bug in Chrome 19-20.
+  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is a native function.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
+ * @example
+ *
+ * _.isNative(Array.prototype.push);
+ * // => true
+ *
+ * _.isNative(_);
+ * // => false
+ */
+function isNative(value) {
+  if (value == null) {
+    return false;
+  }
+  if (isFunction(value)) {
+    return reIsNative.test(fnToString.call(value));
+  }
+  return isObjectLike(value) && reIsHostCtor.test(value);
+}
+
+module.exports = getNative;
+
+},{}],33:[function(require,module,exports){
+/**
+ * lodash 3.0.4 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/**
+ * Checks if `value` is object-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Native method references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+/**
+ * Checks if `value` is array-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ */
+function isArrayLike(value) {
+  return value != null && isLength(getLength(value));
+}
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ */
+function isLength(value) {
+  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Checks if `value` is classified as an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+function isArguments(value) {
+  return isObjectLike(value) && isArrayLike(value) &&
+    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
+}
+
+module.exports = isArguments;
+
+},{}],34:[function(require,module,exports){
+/**
+ * lodash 3.1.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var createAggregator = require('lodash._createaggregator');
+
+/**
+ * Creates an object composed of keys generated from the results of running
+ * each element of `collection` through `iteratee`. The corresponding value
+ * of each key is the last element responsible for generating the key. The
+ * iteratee function is bound to `thisArg` and invoked with three arguments:
+ * (value, index|key, collection).
+ *
+ * If a property name is provided for `iteratee` the created `_.property`
+ * style callback returns the property value of the given element.
+ *
+ * If a value is also provided for `thisArg` the created `_.matchesProperty`
+ * style callback returns `true` for elements that have a matching property
+ * value, else `false`.
+ *
+ * If an object is provided for `iteratee` the created `_.matches` style
+ * callback returns `true` for elements that have the properties of the given
+ * object, else `false`.
+ *
+ * @static
+ * @memberOf _
+ * @category Collection
+ * @param {Array|Object|string} collection The collection to iterate over.
+ * @param {Function|Object|string} [iteratee=_.identity] The function invoked
+ *  per iteration.
+ * @param {*} [thisArg] The `this` binding of `iteratee`.
+ * @returns {Object} Returns the composed aggregate object.
+ * @example
+ *
+ * var keyData = [
+ *   { 'dir': 'left', 'code': 97 },
+ *   { 'dir': 'right', 'code': 100 }
+ * ];
+ *
+ * _.indexBy(keyData, 'dir');
+ * // => { 'left': { 'dir': 'left', 'code': 97 }, 'right': { 'dir': 'right', 'code': 100 } }
+ *
+ * _.indexBy(keyData, function(object) {
+ *   return String.fromCharCode(object.code);
+ * });
+ * // => { 'a': { 'dir': 'left', 'code': 97 }, 'd': { 'dir': 'right', 'code': 100 } }
+ *
+ * _.indexBy(keyData, function(object) {
+ *   return this.fromCharCode(object.code);
+ * }, String);
+ * // => { 'a': { 'dir': 'left', 'code': 97 }, 'd': { 'dir': 'right', 'code': 100 } }
+ */
+var indexBy = createAggregator(function(result, value, key) {
+  result[key] = value;
+});
+
+module.exports = indexBy;
+
+},{"lodash._createaggregator":35}],35:[function(require,module,exports){
+/**
+ * lodash 3.0.0 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modern modularize exports="npm" -o ./`
+ * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.7.0 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var baseCallback = require('lodash._basecallback'),
+    baseEach = require('lodash._baseeach'),
+    isArray = require('lodash.isarray');
+
+/**
+ * Creates a function that aggregates a collection, creating an accumulator
+ * object composed from the results of running each element in the collection
+ * through an iteratee. The `setter` sets the keys and values of the accumulator
+ * object. If `initializer` is provided initializes the accumulator object.
+ *
+ * @private
+ * @param {Function} setter The function to set keys and values of the accumulator object.
+ * @param {Function} [initializer] The function to initialize the accumulator object.
+ * @returns {Function} Returns the new aggregator function.
+ */
+function createAggregator(setter, initializer) {
+  return function(collection, iteratee, thisArg) {
+    var result = initializer ? initializer() : {};
+    iteratee = baseCallback(iteratee, thisArg, 3);
+
+    if (isArray(collection)) {
+      var index = -1,
+          length = collection.length;
+
+      while (++index < length) {
+        var value = collection[index];
+        setter(result, value, iteratee(value, index, collection), collection);
+      }
+    } else {
+      baseEach(collection, function(value, key, collection) {
+        setter(result, value, iteratee(value, key, collection), collection);
+      });
+    }
+    return result;
+  };
+}
+
+module.exports = createAggregator;
+
+},{"lodash._basecallback":36,"lodash._baseeach":41,"lodash.isarray":42}],36:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"dup":22,"lodash._baseisequal":37,"lodash._bindcallback":39,"lodash.isarray":42,"lodash.pairs":40}],37:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"dup":23,"lodash.isarray":42,"lodash.istypedarray":38,"lodash.keys":43}],38:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"dup":24}],39:[function(require,module,exports){
+arguments[4][25][0].apply(exports,arguments)
+},{"dup":25}],40:[function(require,module,exports){
+arguments[4][26][0].apply(exports,arguments)
+},{"dup":26,"lodash.keys":43}],41:[function(require,module,exports){
+arguments[4][27][0].apply(exports,arguments)
+},{"dup":27,"lodash.keys":43}],42:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30}],43:[function(require,module,exports){
+arguments[4][31][0].apply(exports,arguments)
+},{"dup":31,"lodash._getnative":44,"lodash.isarguments":45,"lodash.isarray":46}],44:[function(require,module,exports){
+arguments[4][32][0].apply(exports,arguments)
+},{"dup":32}],45:[function(require,module,exports){
+arguments[4][33][0].apply(exports,arguments)
+},{"dup":33}],46:[function(require,module,exports){
+arguments[4][30][0].apply(exports,arguments)
+},{"dup":30}],47:[function(require,module,exports){
+(function(root) {
+  'use strict';
+
+  function sieveOfErathosthenes(max) {
+    var flags = [];
+    var primes = [];
+    var prime = 2;
+
+    var n = max;
+    while(n--) {
+      flags[max-n] = true;
+    }
+
+    for (prime = 2; prime < Math.sqrt(max); prime++) {
+      if (flags[prime]) {
+        for (var j = prime + prime; j < max; j += prime) {
+          flags[j] = false;
+        }
+      }
+    }
+
+    for (var i = 2; i < max; i++) {
+      if (flags[i]) {
+        primes.push(i);
+      }
+    }
+
+    return primes;
+  }
+
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = sieveOfErathosthenes;
+    }
+    exports.sieveOfErathosthenes = sieveOfErathosthenes;
+  } else if (typeof define === 'function' && define.amd) {
+    define([], function() {
+      return sieveOfErathosthenes;
+    });
+  } else {
+    root.sieveOfErathosthenes = sieveOfErathosthenes;
+  }
+
+})(this);
+
 },{}]},{},[1]);
 
 /** hrmfiddle Web Controller
@@ -7833,14 +11670,87 @@ CP.parseSource = function () {
   }
 
   return false;
+};
 
-  function readInbox($inbox) {
-    return $inbox.val().split(/[, \t\n\"']/).filter(function (v) {
-      return v.trim().length > 0;
-    }).map(function (s) {
-      var n = Number(s);
-      return Number.isNaN(n) ? s : n;
-    });
+var KEY_LOCALSTORAGE_LEVELS = 'hrmsandbox-Levels';
+var SAVE_VERSION = "0.0.2";
+
+CP.createSave = function (name) {
+  return {
+    name: name || (new Date().getTime().toString(16)),
+    when: new Date(),
+    level: this.getLevel(),
+    source: this.editor.getValue()
+  };
+};
+
+CP.saveSource = function (name) {
+  var saves = this.getSaves();
+
+  saves.solutions.push(this.createSave(name));
+  saves.solutions.sort(function (a, b) {
+    return -(a.when.localeCompare(b.when));
+  });
+
+  localStorage.setItem(KEY_LOCALSTORAGE_LEVELS, JSON.stringify(saves));
+
+  return saves;
+};
+
+CP.getSaves = function () {
+  var saves = localStorage.getItem(KEY_LOCALSTORAGE_LEVELS);
+  if (!saves) {
+    saves = { version: "0.0.1", solutions: [] };
+  }
+  else {
+    try {
+      saves = JSON.parse(saves);
+    } catch (e) {
+      console.error(e);
+      saves = { version: "0.0.1", solutions: [] };
+    }
+  }
+
+  return saves;
+};
+
+CP.getLevel = function () {
+  var level = $('#level-selector').val();
+  if (level === 0) {
+    return {
+      number: 0,
+      name: "HRM Sandbox",
+      instructions: "Play around until stuff works, or doesn't.",
+      commands: [ "INBOX", "OUTBOX", "COPYFROM", "COPYTO", "ADD", "SUB", "BUMPUP", "BUMPDN", "JUMP", "JUMPZ", "JUMPN" ],
+      dereferencing: true,
+      comments: true,
+      labels: true,
+      floor: {
+        columns: 5,
+        rows: 5,
+        tiles: $.parseJSON($('#variables').val())
+      },
+      examples: [{
+          inbox: readInbox($('#inbox')),
+          outbox: [ ]
+      }]
+    };
+  } else {
+    return HrmLevelData[level];
+  }
+};
+
+CP.loadSave = function (save) {
+  this.editor.setValue(save.source);
+  $('#level-selector').val(HrmLevelData.findIndex(function (level) {
+    return level.number == save.level.number;
+  }));
+  $('#inbox').val(save.level.examples[0].inbox.join(", "));
+  if (save.level.floor) {
+    $('#variables').val(JSON.stringify(save.level.floor.tiles, null, 2));
+  }
+  else {
+    $('#variables').val("{}");
   }
 };
 
@@ -8135,6 +12045,74 @@ CP.bindVisuals = function() {
 
   $('div.split-pane').splitPane();
 
+  $('#level-selector').empty();
+  for (var ll = 0; ll < HrmLevelData.length; ++ll) {
+    var level = HrmLevelData[ll];
+    var opt = $('<option>', { value: ll });
+    opt.text(level.number + ': ' + level.name);
+    $('#level-selector').append(opt);
+  }
+  $('#level-selector').val(0);
+  $('#level-instructions').text(HrmLevelData[0].instructions);
+
+  $('#level-selector').change(function() {
+    self.stop();
+    var level = $(this).val();
+    $('#level-instructions').text(HrmLevelData[level].instructions);
+    $('#inbox').val(HrmLevelData[level].examples[0].inbox.join(", "));
+    if (HrmLevelData[level].floor) {
+      $('#variables').val(JSON.stringify(HrmLevelData[level].floor.tiles || {}, null, 2));
+    } else {
+      $('#variables').val("{}");
+    }
+  }).trigger('change');
+
+  $('#saveModal').on('shown.bs.modal', function () {
+    $('#save-errors').empty();
+    $('#save-name').val(undefined);
+    $('#save-name').focus();
+  });
+
+  $('#do-save').on('click', function () {
+    try {
+      self.saveSource($('#save-name').val());
+      $('#saveModal').modal('hide');
+    } catch (e) {
+      console.error(e);
+      var alert = $('<div class="alert alert-danger alert-dismissible" role="alert">');
+      alert.append('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+      alert.append('<strong>Could not save!</strong> ' + e.toString());
+      $('#save-errors').empty();
+      $('#save-errors').append(alert);
+    }
+  });
+
+  $('#saves-to-load').on('click', 'a.load-save', function () {
+    self.stop();
+    var id = $(this).attr('data-save-id');
+    var saves = self.getSaves();
+    $('#loadModal').modal('hide');
+    self.loadSave(saves.solutions[id]);
+  });
+
+  $('#loadModal').on('shown.bs.modal', function () {
+    $('#saves-to-load').empty();
+    var saves = self.getSaves();
+    if (saves && saves.solutions) {
+      for (var ss = 0; ss < saves.solutions.length; ++ss) {
+        var save = saves.solutions[ss];
+        var link = $('<a>', { class: 'load-save', href: "#", "data-save-id": ss });
+        link.text('Level ' + save.level.number + ': ' + save.name + ' (' + save.when + ')');
+        $('#saves-to-load').append(
+          $('<li>').append(link)
+        );
+      }
+    }
+    else {
+      $('#saves-to-load').append('<li>No saves found</li>');
+    }
+  });
+
   $('#run').on('click', function btnRunClick() {
     switch (self.uiState) {
       case UI_STATE_STOPPED:
@@ -8223,6 +12201,15 @@ CP.locFromState = function locFromState(s) {
   return { start: {}, end: {} };
 };
 
+function readInbox($inbox) {
+  return $inbox.val().split(/[, \t\n\"']/).filter(function (v) {
+    return v.trim().length > 0;
+  }).map(function (s) {
+    var n = Number(s);
+    return Number.isNaN(n) ? s : n;
+  });
+}
+
 // From: Underscore.js 1.8.3
 // http://underscorejs.org
 // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -8248,4 +12235,53 @@ function debounce(func, wait, immediate) {
       func.apply(context, args);
     }
 	};
+}
+
+//
+// Array.find and findIndex polyfills from MDN
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+//
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+}
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
 }
