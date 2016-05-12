@@ -482,11 +482,11 @@ CP.updateUI = function (hrmState, nextUiState) {
   }
 
   // Update floor
-  if (hrmState !== undefined && hrmState.variables !== undefined) {
+  if (hrmState !== undefined && this.getLevel().floor !== undefined && hrmState.variables !== undefined) {
     for (var i = 0; i < this.getLevel().floor.rows * this.getLevel().floor.columns; i++) {
-      var displayed = hrmState.variables[i];
-      if (displayed === undefined) {
-        displayed = '';
+      var displayed = '';
+      if (hrmState.variables[i] !== undefined) {
+        displayed = hrmState.variables[i];
       }
 
       $('#floor' + i).text(displayed);
@@ -564,12 +564,13 @@ CP.bindVisuals = function() {
     var level = $(this).val();
     $('#level-instructions').text(HrmLevelData[level].instructions);
     $('#inbox').val(HrmLevelData[level].examples[0].inbox.join(", "));
+    
+    $('#floorState').empty();
+
     if (HrmLevelData[level].floor) {
       $('#variables').val(JSON.stringify(HrmLevelData[level].floor.tiles || {}, null, 2));
 
       // Create floor
-      $('#floorState').empty();
-
       var rows = HrmLevelData[level].floor.rows || 5;
       var columns = HrmLevelData[level].floor.columns || 5;
       var tiles = HrmLevelData[level].floor.tiles;
