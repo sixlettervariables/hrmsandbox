@@ -481,6 +481,26 @@ CP.updateUI = function (hrmState, nextUiState) {
     }
   }
 
+  // Update floor
+  if (hrmState !== undefined && hrmState.variables !== undefined) {
+    for (var i = 0; i < this.getLevel().floor.rows * this.getLevel().floor.columns; i++) {
+      var displayed = hrmState.variables[i];
+      if (displayed === undefined) {
+        displayed = '';
+      }
+
+      $('#floor' + i).text(displayed);
+    }
+  } else {
+    $('#floorState td').text('');
+  }
+  // Update hand
+  if (hrmState !== undefined && hrmState.hand !== undefined) {
+    $('#handState').text(hrmState.hand);
+  } else {
+    $('#handState').text('');
+  }
+
   // Update Editor
   var line = hrmState !== undefined ? this.lineFromState(hrmState) : 0;
   this.editor.setCursor(line);
@@ -546,6 +566,32 @@ CP.bindVisuals = function() {
     $('#inbox').val(HrmLevelData[level].examples[0].inbox.join(", "));
     if (HrmLevelData[level].floor) {
       $('#variables').val(JSON.stringify(HrmLevelData[level].floor.tiles || {}, null, 2));
+
+      // Create floor
+      $('#floorState').empty();
+
+      var rows = HrmLevelData[level].floor.rows || 5;
+      var columns = HrmLevelData[level].floor.columns || 5;
+      var tiles = HrmLevelData[level].floor.tiles;
+      var count = 0;
+      for (var row = 0; row < rows; row++) {
+        var rowElement = $('<tr>').appendTo('#floorState');
+        for (var column = 0; column < columns; column++) {
+          var text = '';
+          if ($.isArray(tiles)) {
+            if (tiles.length > count) {
+              text = tiles[count];
+            }
+          } else if (typeof tiles === 'object') {
+            if (tiles.hasOwnProperty(count)) {
+              text = tiles[count];
+            }
+          }
+          
+          $('<td>').attr('id', 'floor' + count).text(text).appendTo(rowElement);
+          count++;
+        }
+      }
     } else {
       $('#variables').val("{}");
     }
