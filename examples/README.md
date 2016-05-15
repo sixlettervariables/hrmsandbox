@@ -6,66 +6,40 @@ An HRM Sandbox program consists of a mix of labels and instructions, one per
 line, with or without comments.
 
 ### Classic Syntax
-The classic HRM Syntax is supported and should be preferred when sharing
-solutions.
+The classic HRM Syntax is supported and consists of case-sensitive instructions
+and labels.
 ```
 -- HUMAN RESOURCE MACHINE PROGRAM --
 -- this is a Single Line comment
 a:
-  inbox -- this is a comment with an instruction
-  copyto 9
-  jumpz c
+  INBOX -- this is a comment with an instruction
+  COPYTO 9
+  JUMPZ c
 b:
-  copyto 3
-  copyfrom 9
-  add 3
-  outbox
-  jump a
+  COPYTO 3
+  COPYFROM 9
+  ADD 3
+  OUTBOX
+  JUMP a
 c:
-  outbox
-  jump a
-```
-
-### Extended Syntax
-Extended Syntax for the HRM Assembler is supported as well, allowing C style
-comments and named variables.
-```
--- HUMAN RESOURCE MACHINE PROGRAM --
--- this is a Single Line comment
-start:
-  inbox // this is a comment with an instruction
-  copyto $temp
-  jumpz noadd
-
-/* this label is used only for
- * example purposes
- */
-next:
-  copyto $adder
-  copyfrom $temp
-  add $adder
-  outbox
-  jump start
-
-noadd:
-  outbox
-  jump start
+  OUTBOX
+  JUMP a
 ```
 
 ## HRM Sandbox Instruction Set
 | Instruction    | Description                                                          |
 |----------------|----------------------------------------------------------------------|
-| `inbox`        | Takes the value from the top of the inbox and places it in your hand |
-| `outbox`       | Takes the value from your hand and places it on the top of the inbox |
-| `copyto 0`     | Copies the value in your hand into `0`                              |
-| `copyfrom 0`   | Copies the value from `0` into your hand                            |
-| `add 5`        | Adds the value in your hand to the value in `5`                     |
-| `sub 9`        | Subtracts from the value in your hand the value in `9`              |
-| `bumpup 0`     | Increments the value in `0` by one (1), saving it into `0` and your hand |
-| `bumpdn 3`     | Decrements the value in `3` by one (1), saving it into `3` and your hand |
-| `jump label`   | Jumps to `label`                                                    |
-| `jumpz label`  | Jumps to `label` if the value in your hand is zero (0)              |
-| `jumpn label`  | Jumps to `label` if the value in your hand is negative              |
+| `INBOX`        | Takes the value from the top of the inbox and places it in your hand |
+| `OUTBOX`       | Takes the value from your hand and places it on the top of the inbox |
+| `COPYTO 0`     | Copies the value in your hand into `0`                              |
+| `COPYFROM 0`   | Copies the value from `0` into your hand                            |
+| `ADD 5`        | Adds the value in your hand to the value in `5`                     |
+| `SUB 9`        | Subtracts from the value in your hand the value in `9`              |
+| `BUMPUP 0`     | Increments the value in `0` by one (1), saving it into `0` and your hand |
+| `BUMPDN 3`     | Decrements the value in `3` by one (1), saving it into `3` and your hand |
+| `JUMP label`   | Jumps to `label`                                                    |
+| `JUMPZ label`  | Jumps to `label` if the value in your hand is zero (0)              |
+| `JUMPN label`  | Jumps to `label` if the value in your hand is negative              |
 
 ## Examples
 The `examples` folder contains some examples of HRM Sandbox programs.

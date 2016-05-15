@@ -6,18 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HRM Fiddle</title>
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-  <link href="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.css" rel="stylesheet">
-  <style type="text/css" media="screen">
-      #editor {
-        position: relative;
-        height: 500px;
-      }
-  </style>
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/0.2.8/pako_inflate.min.js"></script>
-  <script src="https://cdn.rawgit.com/AlanDeSmet/human-resource-machine-viewer/gh-pages/hrm.js"></script>
-  <script src="https://cdn.rawgit.com/sixlettervariables/hrmsandbox/a26b2cb45d108d5baf5a45b17e4666edaa00ccda/build/hrm-browser.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Passion+One" rel="stylesheet" type="text/css">
+  <link href="hrmfiddle-dist.min.css" rel="stylesheet" type="text/css">
 
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -27,230 +18,308 @@
   <![endif]-->
 </head>
 <body>
-<header class="container">
-  <h1>HRM Fiddle</h1>
-  <p>I don't work for <a href="http://tomorrowcorporation.com">Tommorow Corporation</a>,
-    nor did I work on <a href="http://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a>. But I sure do love the game.</p>
-  <p>HRM Sandbox provides a place to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
-</header>
-<section class="container">
-  <div class="program col-lg-6 col-md-6 col-sm-12">
-    <div>
-        <button id="run" class="btn btn-primary pull-right">Run</button>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">HRM Fiddle</a>
     </div>
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#code" aria-controls="code" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-list-alt"></i> Code</a></li>
-      <li role="presentation"><a href="#view" aria-controls="view" role="tab" data-toggle="tab" id="view-tab"><i class="glyphicon glyphicon-eye-open"></i> View</a></li>
-    </ul>
-    <!-- Tab panes -->
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="code">
-        <div id="editor">-- HUMAN RESOURCE MACHINE PROGRAM --
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a id="load" href="#" data-toggle="modal" data-target="#loadModal">Load</a></li>
+        <li class="active"><a href="#">Edit <span class="sr-only">(current)</span></a></li>
+        <!--<li><a href="#">Open</a></li>-->
+        <li><a id="save" href="#" data-toggle="modal" data-target="#saveModal">Save</a></li>
+        <!--<li><a id="share" href="#">Share</a></li>-->
+      </ul>
+      <div class="nav navbar-nav btn-toolbar command-toolbar">
+        <button type="button" id="view" class="btn btn-default" title="View" data-toggle="button" aria-pressed="false" autocomplete="off"><i class="glyphicon glyphicon-eye-open"></i><span class="sr-only">View</span></button>
+        <button type="button" id="run" class="btn btn-success" title="Play"><i class="glyphicon glyphicon-play"></i><span class="sr-only">Play</span></button>
+        <button type="button" id="resume" class="btn btn-success hidden" title="Resume" disabled><i class="glyphicon glyphicon-play"></i><span class="sr-only">Resume</span></button>
+        <button type="button" id="runToEnd" class="btn btn-success" title="Play to End"><i class="glyphicon glyphicon-fast-forward"></i><span class="sr-only">Play to End</span></button>
+        <button type="button" id="stepInto" class="btn btn-primary" title="Step"><i class="glyphicon glyphicon-step-forward"></i><span class="sr-only">Step</span></button>
+        <button type="button" id="pause" class="btn btn-warning" title="Pause" disabled><i class="glyphicon glyphicon-pause"></i><span class="sr-only">Pause</span></button>
+        <button type="button" id="stop" class="btn btn-danger" title="Stop" disabled><i class="glyphicon glyphicon-stop"></i><span class="sr-only">Stop</span></button>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+        <li><a href="#" data-toggle="modal" data-target="#helpModal">Help</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div>
+
+  <div class="progress hrmfiddle-edit-state">
+    <div id="edit-state" class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+  </div>
+</nav>
+
+<div id="layout" class="split-pane fixed-left">
+  <div id="code-pane" class="split-pane-component">
+    <div class="cm-wrap">
+      <div class="cm-border">
+        <div id="error-panel">
+          <div class="alert alert-dismissable alert-danger hidden" role="alert" id="error">
+            <!--<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>-->
+            <p id="error-content"></p>
+          </div>
+        </div>
+        <div class="hrmcode hidden" id="code-view">Loading View...</div>
+        <textarea id="editor">-- HUMAN RESOURCE MACHINE PROGRAM --
 
 a:
-  inbox
-  add 9
-  copyto 0
-  bumpup 0
-  copyfrom [8]
-  outbox
-  jump a</div>
+    INBOX
+    ADD 9
+    COPYTO 0
+    BUMPUP 0
+    COPYFROM [8]
+    OUTBOX
+    JUMP a
+</textarea>
       </div>
-      <div role="tabpanel" class="tab-pane" id="view"><div class="hrmcode" id="code-view">Loading View...</div></div>
     </div>
-
-    <div class="alert alert-danger hidden" role="alert" id="error"></div>
   </div>
-  <div class="inputs col-lg-3 col-md-3 col-sm-3">
-   <h2>Inbox <small>one per line</small></h2>
-   <textarea id="inbox" class="form-control" rows="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">1
+
+  <div id="divider" class="split-pane-divider"></div>
+
+  <div id="other-pane" class="split-pane-component">
+    <div class="container-fluid">
+
+      <div class="level-select-area col-lg-12 col-md-12 col-sm-12">
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">Level</div>
+            <select id="level-selector" class="form-control">
+              <option value="0" selected>0: HRM Fiddle Sandbox</option>
+            </select>
+          </div>
+        </div>
+        <blockquote>
+          <p id="level-instructions">Play around until stuff works, or doesn't.</p>
+        </blockquote>
+      </div>
+
+      <div class="inputs col-lg-6 col-md-6 col-sm-12">
+       <h4>Inbox <small>[<a href="#edit">edit</a>]</small></h4>
+       <!--<ul id="inbox-view" class="list-unstyled">
+         <li><span class="label label-success">1</span></li>
+         <li><span class="label label-success">2</span></li>
+         <li><span class="label label-success">3</span></li>
+         <li><span class="label label-success">4</span></li>
+       </ul>-->
+       <textarea id="inbox" class="form-control" rows="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">1
 2
 3
-4</textarea>
-  </div>
-<div class="inputs col-lg-3 col-md-3 col-sm-3">
-  <h2>Floor <small>JSON</small></h2>
-  <textarea id="variables" class="form-control" rows="5"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
-  "8": 0,
-  "9": -3
+4
+</textarea>
+      </div>
+      <div class="outputs col-lg-6 col-md-6 col-sm-12">
+        <h4>Outbox <small id="stats"></small></h4>
+        <ul id="outbox" class="list-unstyled">
+        </ul>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="floor col-lg-6 col-md-6 col-sm-12">
+        <h4>Floor State<small id="stats"></small></h4>
+        <div id="handState"></div>
+        <table id="floorState">
+          
+        </table>
+      </div>
+
+      <div class="inputs col-lg-6 col-md-6 col-sm-12">
+        <h4>Floor <small>JSON</small></h4>
+        <textarea id="variables" class="form-control" rows="5"autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
+"8": 0,
+"9": -3
 }</textarea>
+      </div>
+    </div>
   </div>
-  <div class="outputs col-lg-3 col-md-3 col-sm-3">
-    <h2>Outbox <small id="stats"></small></h2>
-    <ul id="outbox" class="list-unstyled">
-    </ul>
+</div>
+
+<!-- Save Modal -->
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="saveModalLabel">Save HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <input id="save-name" type="text" class="form-control" placeholder="Solution Name...">
+        <div id="save-errors"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="do-save" type="button" class="btn btn-primary">Save</button>
+      </div>
+    </div>
   </div>
-</section>
-<section class="container">
-  <div class="help">
-    <h2><a id="user-content-hrm-sandbox-instruction-set" class="anchor" href="#hrm-sandbox-instruction-set" aria-hidden="true"></a>HRM Sandbox Instruction Set</h2>
-    <table class="table table-striped small"><thead>
-    <tr>
-    <th>Instruction</th>
-    <th>Description</th>
-    </tr>
-    </thead><tbody>
-    <tr>
-    <td><code>inbox</code></td>
-    <td>Takes the value from the top of the inbox and places it in your hand</td>
-    </tr>
-    <tr>
-    <td><code>outbox</code></td>
-    <td>Takes the value from your hand and places it on the top of the inbox</td>
-    </tr>
-    <tr>
-    <td><code>copyto 4</code></td>
-    <td>Copies the value in your hand into <code>4</code></td>
-    </tr>
-    <tr>
-    <td><code>copyfrom 4</code></td>
-    <td>Copies the value from <code>4</code> into your hand</td>
-    </tr>
-    <tr>
-    <td><code>copyfrom [1]</code></td>
-    <td>Copies the value from the location pointed to by <code>1</code> into your hand</td>
-    </tr>
-    <tr>
-    <td><code>add 2</code></td>
-    <td>Adds the value in your hand to the value in <code>2</code></td>
-    </tr>
-    <tr>
-    <td><code>sub 3</code></td>
-    <td>Subtracts from the value in your hand the value in <code>3</code></td>
-    </tr>
-    <tr>
-    <td><code>bumpup 1</code></td>
-    <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
-    </tr>
-    <tr>
-    <td><code>bumpdn 0</code></td>
-    <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
-    </tr>
-    <tr>
-    <td><code>jump label</code></td>
-    <td>Jumps to <code>label</code></td>
-    </tr>
-    <tr>
-    <td><code>jumpz label</code></td>
-    <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
-    </tr>
-    <tr>
-    <td><code>jumpn label</code></td>
-    <td>Jumps to <code>label</code> if the value in your hand is negative</td>
-    </tr>
-    </tbody>
-    </table>
+</div>
+
+<!-- Load Modal -->
+<div class="modal fade" id="loadModal" tabindex="-1" role="dialog" aria-labelledby="loadModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="loadModalLabel">Load HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <div class="load-saves-box">
+          <ul id="saves-to-load"></ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
   </div>
-</section>
-<footer class="container">
-<p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Sandbox</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
-<p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
-</footer>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js" type="text/javascript" charset="utf-8"></script>
+</div>
+
+<!-- View Code Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="viewModalLabel">Code Visualizer</h4>
+      </div>
+      <div class="modal-body">
+        <div class="hrmcode" id="code-view">Loading View...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="aboutModalLabel">About HRM Fiddle</h4>
+      </div>
+      <div class="modal-body">
+        <p>I don't work for <a href="http://tomorrowcorporation.com">Tommorow Corporation</a>,
+          nor did I work on <a href="http://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a>. But I sure do love the game.</p>
+        <p>HRM Fiddle provides a sandbox to try and share programs. Tomorrow Corporation didn't sponsor this, nor condone it, nor are they likely aware of it.</p>
+        <p><a href="https://github.com/sixlettervariables/hrmsandbox">HRM Fiddle</a> by <a href="mailto:Christopher.watford@gmail.com">Christopher A. Watford</a></p>
+        <p><b><i class="glyphicon glyphicon-eye-open"></i> View</b> provided by <a href="https://github.com/AlanDeSmet/human-resource-machine-viewer">Human Resource Machine Viewer</a></p>
+        <p><b>Split Panes</b> provided by <a href="https://github.com/shagstrom/split-pane">Simon Hagström's Split Pane</a> project.</p>
+        <p><b>Level Data</b>, <b>Inbox Generator</b>, and <b>Outbox Generator</b> provided by <a href="https://github.com/atesgoral">Ates Goral</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="helpModalLabel">Help</h4>
+      </div>
+      <div class="modal-body">
+        <div class="help">
+          <h2>FAQ</h2>
+          <dl>
+            <dt>Where are my saves?</dt>
+            <dd>Saves are persisted to <code>localStorage</code>, so basically
+            only in your current browser.</dd>
+            <dt>What about saving to The Cloud<sup>&#8482;</sup>?</dt>
+            <dd>Soon.</dd>
+          </dl>
+          <h2>Instruction Set</h2>
+          <table class="table table-striped small"><thead>
+          <tr>
+          <th>Instruction</th>
+          <th>Description</th>
+          </tr>
+          </thead><tbody>
+          <tr>
+          <td><code>INBOX</code></td>
+          <td>Takes the value from the top of the inbox and places it in your hand</td>
+          </tr>
+          <tr>
+          <td><code>OUTBOX</code></td>
+          <td>Takes the value from your hand and places it on the top of the inbox</td>
+          </tr>
+          <tr>
+          <td><code>COPYTO 4</code></td>
+          <td>Copies the value in your hand into <code>4</code></td>
+          </tr>
+          <tr>
+          <td><code>COPYFROM 4</code></td>
+          <td>Copies the value from <code>4</code> into your hand</td>
+          </tr>
+          <tr>
+          <td><code>COPYFROM [1]</code></td>
+          <td>Copies the value from the location pointed to by <code>1</code> into your hand</td>
+          </tr>
+          <tr>
+          <td><code>ADD 2</code></td>
+          <td>Adds the value in your hand to the value in <code>2</code></td>
+          </tr>
+          <tr>
+          <td><code>SUB 3</code></td>
+          <td>Subtracts from the value in your hand the value in <code>3</code></td>
+          </tr>
+          <tr>
+          <td><code>BUMPUP 1</code></td>
+          <td>Increments the value in <code>1</code> by one (1), saving it into <code>1</code> and your hand</td>
+          </tr>
+          <tr>
+          <td><code>BUMPDN 0</code></td>
+          <td>Decrements the value in <code>0</code> by one (1), saving it into <code>0</code> and your hand</td>
+          </tr>
+          <tr>
+          <td><code>JUMP label</code></td>
+          <td>Jumps to <code>label</code></td>
+          </tr>
+          <tr>
+          <td><code>JUMPZ label</code></td>
+          <td>Jumps to <code>label</code> if the value in your hand is zero (0)</td>
+          </tr>
+          <tr>
+          <td><code>JUMPN label</code></td>
+          <td>Jumps to <code>label</code> if the value in your hand is negative</td>
+          </tr>
+          </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/jquery-migrate-1.2.1.js" type="text/javascript"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/selection/mark-selection.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/selection/active-line.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/addon/mode/simple.min.js" type="text/javascript"></script>
+<script src="hrmfiddle-dist.js" type="text/javascript"></script>
 <script type="text/javascript">
-    var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/github");
-    editor.getSession().setTabSize(4);
-    editor.getSession().setUseSoftTabs(true);
-</script>
-<script type="text/javascript">
+var controller = new Controller('editor');
+$(document).ready(function () {
 
-var viewCode = debounce(function (code) {
-  var hrmv = new hrm_viewer();
-  hrmv.append_code_table('code-view', code);
-}, 250, false);
+  controller.setCodeViewer('code-view', $('#viewModal'));
 
-var hrm = require('hrmsandbox');
-$(document).ready(function() {
+  controller.bindVisuals();
 
-  var rendered = false;
-  var oldCode = '';
-  editor.getSession().on('change', function(e) {
-      var currentCode = editor.getValue();
-      if(currentCode == oldCode) {
-        return; //check to prevent multiple simultaneous triggers
-      }
-
-      oldCode = currentCode;
-      rendered = false;
-  });
-
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    if (e.target.id === 'view-tab' && !rendered) {
-      rendered = true;
-      viewCode(editor.getValue());
-    }
-  })
-
-  $('#run').on('click', function () {
-    console.log('run');
-    $('#error').empty();
-    try {
-      var source = editor.getValue();
-      var inbox = $('#inbox').val().split(/\n/).filter(function (v) { return v.trim().length > 0; }).map(function (s) {
-        var n = Number(s);
-        return Number.isNaN(n) ? s : n;
-      });
-      var variables = $.parseJSON($('#variables').val());
-      var program = hrm.parse(source);
-      var results = program.execute({ inbox: inbox, variables: variables });
-      if (results && results.outbox) {
-        $('#stats').empty();
-        $('#stats').append('iterations: ' + results.iterations);
-
-        $('#outbox').empty();
-        for (var ii = 0; ii < results.outbox.length; ++ii) {
-          $('#outbox').append(
-              $('<li>').append(
-                $(typeof results.outbox[ii] !== 'number' ? '<span class="label label-primary">' : '<span class="label label-success">').append(results.outbox[ii].toString())
-              )
-          );
-        }
-      }
-      $('#error').toggleClass('hidden', true);
-    } catch(error) {
-      console.error(error);
-      $('#error').toggleClass('hidden', false);
-      if (error.name && error.name === 'SyntaxError') {
-        var loc = error.location.start;
-        $('#error').append('<b>Error parsing HRM program, aborted.</b><br />' +
-          'Line ' + loc.line + ' Column ' + loc.column + '<br />' +
-          error.message
-        );
-      }
-      else {
-        $('#error').append('<b>Error running HRM program, aborted.</b><br />' +
-          error.message
-        );
-      }
-    }
-  });
 });
-
-// From: Underscore.js 1.8.3
-// http://underscorejs.org
-// (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-// MIT License
-// Returns a function, that, as long as it continues to be invoked, will not
-// be triggered. The function will be called after it stops being called for
-// N milliseconds. If `immediate` is passed, trigger the function on the
-// leading edge, instead of the trailing.
-function debounce(func, wait, immediate) {
-	var timeout;
-	return function() {
-		var context = this, args = arguments;
-		var later = function() {
-			timeout = null;
-			if (!immediate) func.apply(context, args);
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
-		if (callNow) func.apply(context, args);
-	};
-};
-
 </script>
 </body>
 </html>

@@ -1,0 +1,142 @@
+/*
+This file is part of human-resource-machine-viewer, 
+copyright 2015 Alan De Smet.
+
+human-resource-machine-viewer is free software you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+human-resource-machine-viewer is distributed in the hope that it
+will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with human-resource-machine-view.  If not, see
+<http://www.gnu.org/licenses/>.
+*/
+
+.hrmcode {
+	font-family: 'Passion One', sans-serif, Impact;
+	font-size: 130%;
+	background-color: #bca08b;
+	color: black;
+	position: relative;
+	z-index: -2;
+	text-transform: none;
+}
+.hrmcode table {
+	border-collapse: collapse;
+}
+.hrmcode > svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.hrmcode div {
+	margin: .3em;
+}
+.hrmcode td {
+	padding: 0.2em 0.3em;
+}
+.hrmcode span {
+	text-transform: lowercase;
+	padding: 0.1em 0.2em;
+	border-radius: 0.1em;
+	box-shadow: 0.1em 0.1em 0.05em #ac907b;
+}
+
+.hrmcode span.asm_comment {
+	text-transform: none;
+}
+.hrmcode .unknown {
+}
+.hrmcode .copyfrom,.hrmcode .copyto {
+	background-color: #c96a52;
+	color: #5f2b1d;
+}
+.hrmcode .comment {
+	color: black;
+}
+.hrmcode .comment svg {
+	vertical-align: middle;
+	height: 3em;
+	max-width: 9em;
+	width: auto;
+}
+.hrmcode .arg svg {
+	vertical-align: middle;
+	height: 1em;
+	width: auto;
+}
+.hrmcode .asm_comment, .hrmcode .arg svg, .hrmcode .comment {
+	background-color: #ede6c5;
+}
+.hrmcode .cmd {
+	display: inline-block;
+}
+.hrmcode .inbox,.hrmcode .outbox {
+	background-color: #9cb65b;
+	color: #474f2c;
+}
+.hrmcode .bumpup,.hrmcode .bumpdown,.hrmcode .add,.hrmcode .sub {
+	background-color: #c48d63;
+	color: #5b3d27;
+}
+.hrmcode .jump,.hrmcode .jumpn,.hrmcode .jumpz,.hrmcode .jumpdst {
+	background-color: #8d8dc1;
+	color: #3d3c5a;
+}
+.hrmcode .jumptype {
+	font-size: 70%;
+	line-height: 60%;
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0;
+	padding-left: 0.1em;
+	margin: 0;
+	border: 0;
+}
+.hrmcode .jumpdst {
+	color: #8d8dc1;
+	/*color: #5d5d91;*/
+	min-width: 1.5em;
+}
+.hrmcode .asm_comment {
+	color: #666;
+}
+.hrmcode td.linenum {
+	background-color: #a48a78;
+	color: #7b6456;
+}
+.hrmcode .jumppath {
+	stroke: #8d8dc1;
+	stroke-width: 0.3em;
+	fill: transparent;
+}
+.hrmcode .jumppatharrow {
+	stroke: #8d8dc1;
+	fill: #8d8dc1;
+	stroke-width: 0;
+}
+.hrmcode > svg {
+	z-index: -1;
+}
+
+.hrmcode svg circle.stroke{
+	color: black;
+}
+
+.hrmcode svg polyline.stroke{
+	color: black;
+	stroke: black;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	fill: transparent;
+}
+
+.hrmcode tr.active td {
+	background-color: blue;
+}

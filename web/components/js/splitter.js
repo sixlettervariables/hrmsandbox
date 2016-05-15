@@ -1,3 +1,4 @@
+// jshint ignore: start
 /*!
 
 Split Pane v0.1

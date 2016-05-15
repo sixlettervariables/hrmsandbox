@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Human Resource Machine Program Viewer</title>
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+<script src="pako_inflate.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="hrm.css" rel="stylesheet">
+<script src="hrm.js"></script>
+<style>
+.footer {
+	font-size: 80%;
+	color: #888;
+}
+body {
+	font-family: sans-serif;
+}
+h1,h2,h3,h4 {
+	font-weight: normal;
+	font-family: 'Passion One', sans-serif, Impact;
+}
+pre {
+	margin-left: 2em;
+}
+</style>
+</head>
+<body>
+<!--
+This file is part of human-resource-machine-viewer, 
+copyright 2015 Alan De Smet.
+
+human-resource-machine-viewer is free software you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+human-resource-machine-viewer is distributed in the hope that it
+will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with human-resource-machine-view.  If not, see
+<http://www.gnu.org/licenses/>.
+-->
+<h1>Human Resource Machine Program Viewer</h1>
+
+<p>The Human Resource Machine Program Viewer is a Javascript
+program to read Human Resource Machine (HRM) programs and display
+them similarly to how HRM itself does.
+
+<p>The viewer is very new and the interface may change!
+
+<h2>Example</h2>
+<a
+href="example.html?u=36-Alphabetizer.size.speed.asm&t=Solution+for+floor+36:+Alphabetizer">A more complex example is also
+available.</a>
+<div class="hrmcode" id="code">Loading...</div>
+
+<h2>Usage</h2>
+
+<p>Step 1: Add the following to your web page's &lt;head&gt;.
+The inclusion of webfont.js is optional but the default
+configuration loads the Passion One font using it.
+Passion One is a rough
+match for the font used in HRM.
+
+<pre>
+&lt;script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"&gt;&lt;/script&gt;
+&lt;script src="pako_inflate.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://code.jquery.com/jquery-2.1.4.min.js"&gt;&lt;/script&gt;
+&lt;link href="hrm.css" rel="stylesheet"&gt;
+&lt;script src="hrm.js"&gt;&lt;/script&gt;
+</pre>
+
+<p>Step 2: Create a location for the code to be displayed in your body.
+It should have a class of hrmcode and a unique id.  You can put
+content to display while the code loads inside; it will be
+removed when the code is ready.
+
+<pre>
+&lt;div class="hrmcode" id="code"&gt;Loading...&lt;/div&gt;
+</pre>
+
+<p>Step 3: Add the following code, passing in the id
+for your div and the URL to the code.  The complexity is
+necessary to ensure that the Passion One font is loaded before
+the code is drawn; if the font loads after the code the jump
+arrows will be misaligned.
+<pre>
+&lt;script&gt;
+var hrmv;
+function fonts_loaded() {
+	hrmv = new HRMViewer('code', 'simple.asm');
+}
+WebFont.load({
+	google: { families: ['Passion One'] },
+	active: fonts_loaded,
+	inactive: fonts_loaded,
+});
+&lt;/script&gt;
+</pre>
+
+<p>Step 4: Optionally adjust hrm.css to adjust the formatting.
+
+<p>The arrows showing jumps are dependent on the
+positioning of text in the table.  Anything that changes the
+table's layout will invalidate the jump arrows; they'll be
+mis-aligned. Changes include
+fonts loading, or the table having originally been created
+display:none and later revealed.  If a situation requires it,
+call updateJumpArrows:
+<pre>
+&lt;script&gt;
+function layoutChanged() {
+	hrmv.updateJumpArrows();
+}
+&lt;/script&gt;
+</pre>
+
+<p>You can highlight a particular line with setActiveLine,
+passing in the line number (from the original assembly) of the line to be highlighted.
+Only a single line is highlighted at a time; setActiveLine on a
+different line will remove the highlight from the previous one.
+Calling setActiveLine without arguments will clear the highlight.
+
+
+<div class="footer">Human Resource Machine Program Viewer ©2015 Alan De Smet</div>
+
+<script>
+function fonts_loaded() {
+	var hrmv = new HRMViewer('code', 'simple.asm');
+}
+WebFont.load({
+	google: { families: ['Passion One'] },
+	active: fonts_loaded,
+	inactive: fonts_loaded,
+});
+</script>
+</body>
+</html>

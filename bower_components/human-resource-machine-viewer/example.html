@@ -1,0 +1,221 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Human Resource Machine Program Viewer</title>
+<link href="hrm.css" rel="stylesheet">
+<link href='https://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+<script src="pako_inflate.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="hrm.js"></script>
+<style>
+.footer {
+	font-size: 80%;
+	color: #888;
+}
+body {
+	font-family: sans-serif;
+}
+h1,h2,h3,h4 {
+	font-weight: normal;
+	font-family: 'Passion One', sans-serif, Impact;
+}
+pre {
+	margin-left: 2em;
+	font-family: 'Ubuntu Mono';
+	font-size: 120%;
+}
+ul#tabs {
+	list-style-type: none;
+	padding-top: 2em;
+	margin: 0;
+	/*
+	vertical-align: bottom;
+	border: 2px solid green;
+	height: 3em;
+	*/
+}
+ul#tabs li {
+	display: inline-block;
+	margin-right: 1em;
+}
+ul#tabs li a {
+	color: #42454a;
+	background-color: #9C806B;
+	padding: 0.3em 0.3em 0 0.3em;
+	text-decoration: none;
+	font-family: 'Passion One', sans-serif, Impact;
+	font-size: 170%;
+	border-radius: 0.4em 0.4em 0 0;
+}
+ul#tabs li a:hover {
+	background-color: #BCA08B;
+}
+ul#tabs li a.selected {
+	color: black;
+	background-color: #BCA08B;
+	padding-top: 0.8em;
+}
+div.tabbody {
+}
+div.tabbody.hidden { display: none; }
+a.downbutton {
+	display: block;
+	color: #42454a;
+	font-family: 'Passion One', sans-serif, Impact;
+	background-color: #9C806B;
+	font-size: 170%;
+	border-radius: 0.4em;
+	padding: 0.1em 0.3em;
+	text-decoration: none;
+	margin-top: 0.5em;
+}
+#rawcode {
+	background-color: #BCA08B;
+	color: black;
+	margin: 0;
+	padding: 1em 1em 1em 2em;
+}
+</style>
+</head>
+<body>
+<!--
+This file is part of human-resource-machine-viewer, 
+copyright 2015 Alan De Smet.
+
+human-resource-machine-viewer is free software you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+human-resource-machine-viewer is distributed in the hope that it
+will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with human-resource-machine-view.  If not, see
+<http://www.gnu.org/licenses/>.
+-->
+<h1>Human Resource Machine Program Viewer</h1>
+
+<div style="float: right"><a class="downbutton" download>Download</a></div>
+<ul id="tabs">
+<li><a href="#tabcode">Code</a>
+<li><a href="#tabraw">Raw</a>
+</ul>
+<div class="tabbody" id="tabcode">
+<div class="hrmcode" id="code">Loading...</div>
+</div>
+<div class="tabbody hide" id="tabraw">
+<pre id="rawcode">Loading...</pre>
+</div>
+
+
+
+<div class="footer"><a
+href="https://alandesmet.github.io/human-resource-machine-viewer/">Human
+Resource Machine Program Viewer</a> ©2015 Alan De Smet</div>
+
+<script>
+
+// Initialize code viewer
+function fonts_loaded() {
+	font_ready = 1;
+	render_table();
+}
+WebFont.load({
+	google: { families: ['Passion One'] },
+	active: fonts_loaded,
+	inactive: fonts_loaded,
+});
+
+
+function show_tab(ev) {
+	$('#tabs a.selected').removeClass("selected");
+	$(this).addClass("selected");
+	$('.tabbody').addClass('hidden');
+	var id = $(this).attr('href');
+	$(id).removeClass('hidden');
+	ev.preventDefault();
+	$(this).blur();
+}
+
+var code_ready = '';
+var font_ready = 0;
+var hrmv;
+var line = 0;
+
+function highlight_next() {
+	line++;
+	if(line > 20) { line = 1; }
+	hrmv.setActiveLine(line);
+	setTimeout(highlight_next, 1000);
+}
+
+function render_table() {
+	if( (code_ready.length == 0) || (!font_ready)) { return; }
+	hrmv = new HRMViewer('code', code_ready);
+	//setTimeout(highlight_next, 1000); // Test line highlighting
+}
+
+function code_arrived(data) {
+	code_ready = data;
+	render_table();
+	$('#rawcode').empty();
+	$('#rawcode').text(code_ready);
+}
+
+function get_first_search_arg(search_key) {
+	var args = window.location.search.substr(1).split('&');
+	for(var i = 0; i < args.length; i++) {
+		var eq_idx = args[i].indexOf('=');
+		if(eq_idx < 0) { continue; }
+		var key = args[i].substr(0, eq_idx);
+		if(key == search_key) {
+			var out = args[i].substr(eq_idx+1);
+			out = out.replace(/\+/g, ' ');
+			return decodeURI(out);
+		}
+	}
+	return '';
+}
+
+function report_error(msg) {
+	$('#rawcode').empty();
+	$('#rawcode').text(msg);
+	$('#code').empty();
+	$('#code').text(msg);
+}
+
+$(document).ready(function(){
+	// Initialize tabs
+	$('#tabs a').click(show_tab);
+	$('.tabbody').addClass('hidden');
+	$('#tabs a').first().trigger("click");
+
+
+	var url = get_first_search_arg('u');
+	$('.downbutton').attr("href", url);
+	var title = get_first_search_arg('t');
+	if(title.length == 0) { title = url; }
+	if(title.length == 0) { title = 'Human Resource Machine Program Viewer'; }
+	if(url.length != 0) {
+		$.ajax(url, {
+			success: code_arrived, 
+			error: function(xhr,tstatus, err) {
+				report_error("Unable to load program "+url+": "+tstatus+" "+err);
+			}, 
+			dataType: "text"
+			});
+		$('h1').text(title);
+	} else {
+		report_error("No program was specified to display.");
+	}
+});
+	
+
+
+</script>
+</body>
+</html>

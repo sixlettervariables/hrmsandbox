@@ -1,0 +1,13 @@
+{
+  "name": "human-resource-machine-viewer",
+  "homepage": "https://github.com/AlanDeSmet/human-resource-machine-viewer",
+  "_release": "dc52ac583c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "gh-pages",
+    "commit": "dc52ac583cd1a405653905ec7af75c9f825e2deb"
+  },
+  "_source": "git://github.com/AlanDeSmet/human-resource-machine-viewer.git",
+  "_target": "gh-pages",
+  "_originalSource": "git://github.com/AlanDeSmet/human-resource-machine-viewer"
+}

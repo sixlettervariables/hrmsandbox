@@ -1,0 +1,93 @@
+html, body
+{
+  margin: 0;			/* Remove body margin/padding */
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;	/* Remove scroll bars on browser window */
+}
+.CodeMirror {
+  border: 1px solid #eee;
+  height: 100%;
+}
+.cm-wrap {
+  position: relative;
+  height: 100%;
+  background: #eee;
+  box-sizing: border-box;
+}
+.cm-border {
+  background: #eee;
+  height: 100%;
+}
+.breakpoints {width: .8em;}
+.breakpoint { color: #822; }
+.line-breakpoint { background-color: #ff7; }
+.line-error { background-color: #f2dede; }
+.command-toolbar {
+  margin-top: 8px;
+  margin-left: 25px;
+}
+.modal-lg { left: -25%; }
+
+/*.load-saves-box {
+  min-height: 300px;
+  max-height: 600px;
+  overflow: scroll;
+}*/
+
+.level-select-area {
+  margin-top: 4px;
+}
+
+#code-view {
+  height: 100%;
+}
+
+.hrmcode { z-index: 1; }
+.hrmcode > svg { z-index: 2; }
+.hrmcode tr.active td {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.progress {
+  margin-bottom: 0px;
+  height: 4px;
+}
+
+#header { padding: 1em; }
+
+#code-pane {
+  padding-top: 54px;
+  min-width: 400px;
+  width: 60%;
+}
+
+#divider {
+  left: 60%;
+  width: 5px;
+  background: #ccc;
+}
+
+#other-pane {
+  padding-top: 54px;
+  left: 60%;
+  margin-left: 5px;
+  min-width: 150px;
+}
+
+.alert {
+  margin: 5px;
+}
+
+#floorState, #handState {
+  float: left;
+  margin: 10px;
+}
+#floorState td, #handState {
+  border: 1px solid black;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  vertical-align: middle;
+}
